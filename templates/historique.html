@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}
+Historique - CALCULATEDX WEB
+{% endblock %}
+
+{% block content %}
+
+{% if historique %}
+
+    {% for calcul in historique %}
+        <p>{{ calcul }}</p>
+    {% endfor %}
+
+{% else %}
+
+    <p>Aucun calcul dans l'historique.</p>
+
+{% endif %}
+
+{% endblock %}
