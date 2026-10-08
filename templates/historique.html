@@ -44,7 +44,48 @@ Historique - CALCULATEDX PRO
 
             {% if historique %}
 
+            <div class="history-filters">
+
+    <input
+        type="search"
+        id="history-search"
+        placeholder="Rechercher un nombre ou un résultat..."
+        aria-label="Rechercher dans l'historique"
+    >
+
+    <select id="operation-filter"
+            aria-label="Filtrer par opération">
+
+        <option value="">Toutes les opérations</option>
+        <option value="+">Addition (+)</option>
+        <option value="-">Soustraction (−)</option>
+        <option value="*">Multiplication (×)</option>
+        <option value="/">Division (÷)</option>
+
+    </select>
+
+    <button
+        type="button"
+        id="reset-history-filters"
+        class="reset-filter-button"
+    >
+        Réinitialiser
+    </button>
+
+</div>
+
+<div class="history-filter-summary">
+    <span id="history-results-count" aria-live="polite">
+        {{ historique|length }} résultat(s) affiché(s)
+    </span>
+</div>
+
             <div class="history-table-wrapper">
+
+<div id="history-no-results" class="history-no-results" hidden>
+    <h3>Aucun résultat trouvé</h3>
+    <p>Modifiez votre recherche ou sélectionnez une autre opération.</p>
+</div>
 
     <table class="history-table">
 
@@ -64,7 +105,9 @@ Historique - CALCULATEDX PRO
         <tbody>
     {% for calcul in historique %}
 
-    <tr>
+    <tr class="history-data-row"
+        data-operation="{{ calcul.operation }}">
+
         <td>{{ loop.index }}</td>
 
         <td>
@@ -140,5 +183,82 @@ Historique - CALCULATEDX PRO
 
     </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("history-search");
+    const operationFilter = document.getElementById("operation-filter");
+    const resetButton = document.getElementById("reset-history-filters");
+
+    const rows = document.querySelectorAll(".history-data-row");
+
+    const resultsCount = document.getElementById("history-results-count");
+    const noResults = document.getElementById("history-no-results");
+
+    if (!searchInput || !operationFilter || !resetButton) {
+        return;
+    }
+
+    function filtrerHistorique() {
+
+        const recherche = searchInput.value.trim().toLowerCase();
+        const operation = operationFilter.value;
+
+        let nombreVisible = 0;
+
+        rows.forEach(function (row) {
+
+            const cellules = row.querySelectorAll("td");
+
+            const contenu = [
+                cellules[2]?.textContent,
+                cellules[4]?.textContent,
+                cellules[5]?.textContent
+            ].join(" ").toLowerCase();
+
+            const operationLigne = row.dataset.operation;
+
+            const correspondRecherche = contenu.includes(recherche);
+
+            const correspondOperation =
+                operation === "" || operationLigne === operation;
+
+            row.hidden = !(correspondRecherche && correspondOperation);
+
+            if (!row.hidden) {
+                nombreVisible++;
+            }
+        });
+
+        if (resultsCount) {
+            resultsCount.textContent =
+                `${nombreVisible} résultat(s) affiché(s)`;
+        }
+
+        if (noResults) {
+            noResults.hidden = nombreVisible !== 0;
+        }
+    }
+
+    // 1. Recherche
+    searchInput.addEventListener("input", filtrerHistorique);
+
+    // 2. Filtre par opération
+    operationFilter.addEventListener("change", filtrerHistorique);
+
+    // 3. Réinitialisation des filtres
+    resetButton.addEventListener("click", function () {
+
+        searchInput.value = "";
+        operationFilter.value = "";
+
+        filtrerHistorique();
+
+        searchInput.focus();
+    });
+
+});
+</script>
 
 {% endblock %}

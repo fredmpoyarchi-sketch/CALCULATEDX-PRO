@@ -1147,3 +1147,122 @@ body {
     outline: 3px solid #fca5a5;
     outline-offset: 2px;
 }
+
+
+/* Recherche et filtres */
+
+.history-filters {
+    display: flex;
+    gap: 15px;
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-filters input,
+.history-filters select {
+    padding: 13px 15px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.history-filters input {
+    flex: 1;
+    min-width: 0;
+}
+
+.history-filters select {
+    min-width: 200px;
+}
+
+.history-filters input:focus,
+.history-filters select:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 1px;
+}
+
+@media (max-width: 700px) {
+    .history-filters {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .history-filters select {
+        width: 100%;
+    }
+}
+
+
+.history-data-row[hidden] {
+    display: none;
+}
+
+
+/* Compteur de résultats */
+
+.history-filter-summary {
+    padding: 12px 30px;
+    background: #fafbff;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Aucun résultat */
+
+.history-no-results {
+    padding: 45px 20px;
+    text-align: center;
+}
+
+.history-no-results h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.history-no-results p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.history-no-results[hidden] {
+    display: none;
+}
+
+
+/* Bouton de réinitialisation */
+
+.reset-filter-button {
+    padding: 13px 18px;
+    background: #eef2ff;
+    color: var(--primary);
+
+    border: 1px solid #c7d2fe;
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    transition: 0.2s ease;
+}
+
+.reset-filter-button:hover {
+    background: #e0e7ff;
+}
+
+.reset-filter-button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+    .reset-filter-button {
+        width: 100%;
+    }
+}
