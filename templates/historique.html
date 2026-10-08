@@ -45,36 +45,72 @@ Historique - CALCULATEDX PRO
             {% if historique %}
 
             <div class="history-table-wrapper">
-                <table class="history-table">
 
-                    <thead>
-                        <tr>
-                            <th>N°</th>
-                            <th>Opération effectuée</th>
-                            <th>Statut</th>
-                        </tr>
-                    </thead>
+    <table class="history-table">
 
-                    <tbody>
-                        {% for calcul in historique %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Date et heure</th>
+                <th>Nombre 1</th>
+                <th>Opération</th>
+                <th>Nombre 2</th>
+                <th>Résultat</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
 
-                            <td class="history-operation">
-                                {{ calcul }}
-                            </td>
+        <tbody>
+    {% for calcul in historique %}
 
-                            <td>
-                                <span class="history-status">
-                                    Terminé
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+    <tr>
+        <td>{{ loop.index }}</td>
 
-                </table>
-            </div>
+        <td>
+            {{ calcul.date_creation[8:10] }}/{{ calcul.date_creation[5:7] }}/{{ calcul.date_creation[0:4] }}
+            <span class="history-time">
+                {{ calcul.date_creation[11:16] }}
+            </span>
+        </td>
+
+        <td>{{ "%g"|format(calcul.nombre1) }}</td>
+
+        <td class="history-operation">
+            {{ calcul.operation }}
+        </td>
+
+        <td>{{ "%g"|format(calcul.nombre2) }}</td>
+
+        <td class="history-operation">
+            <strong>{{ "%g"|format(calcul.resultat) }}</strong>
+        </td>
+
+        <td>
+            <span class="history-status">
+                Terminé
+            </span>
+        </td>
+
+        <td>
+            <form
+                action="{{ url_for('supprimer_operation', calcul_id=calcul.id) }}"
+                method="POST"
+                onsubmit="return confirm('Voulez-vous vraiment supprimer ce calcul ?');"
+            >
+                <button type="submit" class="delete-button">
+                    Supprimer
+                </button>
+            </form>
+        </td>
+    </tr>
+
+    {% endfor %}
+</tbody>
+
+    </table>
+
+</div>
 
             {% else %}
 

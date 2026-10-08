@@ -46,19 +46,38 @@ def enregistrer_calcul(nombre1, operation, nombre2, resultat):
 
 
 def lire_historique():
-    """Récupère les calculs enregistrés."""
+    """Récupère les calculs détaillés depuis SQLite."""
 
     with obtenir_connexion() as connexion:
         lignes = connexion.execute(
             """
-            SELECT nombre1, operation, nombre2, resultat
+            SELECT
+                id,
+                nombre1,
+                operation,
+                nombre2,
+                resultat,
+                date_creation
             FROM calculs
-            ORDER BY id ASC
+            ORDER BY id DESC
             """
         ).fetchall()
 
-    return [
-        f"{ligne['nombre1']:g} {ligne['operation']} "
-        f"{ligne['nombre2']:g} = {ligne['resultat']:g}"
-        for ligne in lignes
-    ]
+    return [dict(ligne) for ligne in lignes]
+
+
+def supprimer_calcul(calcul_id):
+    """Supprime un calcul à partir de son identifiant."""
+
+    with obtenir_connexion() as connexion:
+        curseur = connexion.execute(
+            """
+            DELETE FROM calculs
+            WHERE id = ?
+            """,
+            (calcul_id,)
+        )
+
+        connexion.commit()
+
+        return curseur.rowcount > 0

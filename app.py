@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from models import Calculatrice
+from database import supprimer_calcul
 
 app = Flask(__name__)
 calculatrice = Calculatrice()
@@ -51,6 +52,15 @@ def historique():
         "historique.html",
         historique=operations
     )
+
+
+@app.route("/historique/supprimer/<int:calcul_id>", methods=["POST"])
+def supprimer_operation(calcul_id):
+
+    supprimer_calcul(calcul_id)
+
+    return redirect(url_for("historique"))
+
 
 @app.route("/api/v1/calculer", methods=["POST"])
 def api_calculer():
