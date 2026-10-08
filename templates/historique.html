@@ -1,21 +1,108 @@
 {% extends "base.html" %}
 
 {% block title %}
-Historique - CALCULATEDX WEB
+Historique - CALCULATEDX PRO
 {% endblock %}
 
 {% block content %}
 
-{% if historique %}
+<section class="history-page">
+    <div class="container">
 
-    {% for calcul in historique %}
-        <p>{{ calcul }}</p>
-    {% endfor %}
+        <div class="history-heading">
+            <div>
+                <span class="page-badge">
+                    SUIVI DES OPÉRATIONS
+                </span>
 
-{% else %}
+                <h1>Historique des calculs</h1>
 
-    <p>Aucun calcul dans l'historique.</p>
+                <p>
+                    Consultez les opérations réalisées
+                    pendant votre session.
+                </p>
+            </div>
 
-{% endif %}
+            <a href="{{ url_for('calcul') }}"
+               class="btn btn-primary">
+                + Nouveau calcul
+            </a>
+        </div>
+
+        <div class="history-card">
+
+            <div class="history-card-header">
+                <div>
+                    <h2>Opérations enregistrées</h2>
+                    <p>Liste des calculs effectués</p>
+                </div>
+
+                <span class="history-count">
+                    {{ historique|length }} opération(s)
+                </span>
+            </div>
+
+            {% if historique %}
+
+            <div class="history-table-wrapper">
+                <table class="history-table">
+
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Opération effectuée</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for calcul in historique %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+
+                            <td class="history-operation">
+                                {{ calcul }}
+                            </td>
+
+                            <td>
+                                <span class="history-status">
+                                    Terminé
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            {% else %}
+
+            <div class="history-empty">
+
+                <div class="history-empty-icon">
+                    ↺
+                </div>
+
+                <h3>Aucun calcul enregistré</h3>
+
+                <p>
+                    Vos opérations apparaîtront ici
+                    après votre premier calcul.
+                </p>
+
+                <a href="{{ url_for('calcul') }}"
+                   class="btn btn-primary">
+                    Effectuer un calcul →
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</section>
 
 {% endblock %}

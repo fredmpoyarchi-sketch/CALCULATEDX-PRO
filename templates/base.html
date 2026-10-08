@@ -3,49 +3,82 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <title>
+        {% block title %}
+        CALCULATEDX PRO
+        {% endblock %}
+    </title>
 
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/style.css') }}"
     >
-
-    <title>
-        {% block title %}
-        CALCULATEDX WEB
-        {% endblock %}
-    </title>
 </head>
 
 <body>
 
-    <header>
-        <h1>CALCULATEDX WEB</h1>
+    <!-- Barre de navigation -->
+    <header class="navbar">
 
-        <nav>
-                <a href="{{ url_for('accueil') }}">Accueil</a>
-                <a href="{{ url_for('calcul') }}">Calcul</a>
-                <a href="{{ url_for('historique') }}">Historique</a>
-        </nav>
+        <div class="container navbar-content">
+
+            <a href="{{ url_for('accueil') }}" class="brand">
+                <span class="brand-icon">CX</span>
+
+                <span class="brand-name">
+                    CALCULATEDX
+                    <small>PRO</small>
+                </span>
+            </a>
+
+            <nav class="nav-links">
+
+                <a href="{{ url_for('accueil') }}">
+                    Accueil
+                </a>
+
+                <a href="{{ url_for('calcul') }}">
+                    Calculatrice
+                </a>
+
+                <a href="{{ url_for('historique') }}">
+                    Historique
+                </a>
+
+            </nav>
+
+        </div>
+
     </header>
 
-    
-    <main>
+
+    <!-- Contenu propre à chaque page -->
+    <main class="main-content">
 
         {% block content %}
-
         {% endblock %}
 
     </main>
 
-    <footer>
-        <p>CALCULATEDX WEB</p>
+
+    <!-- Pied de page -->
+    <footer class="footer">
+
+        <div class="container footer-content">
+
+            <p>
+                CALCULATEDX PRO
+            </p>
+
+            <p class="footer-tech">
+                Python • Flask • REST API
+            </p>
+
+        </div>
+
     </footer>
 
 </body>
-
 </html>

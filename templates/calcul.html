@@ -1,47 +1,188 @@
 {% extends "base.html" %}
 
 {% block title %}
-Calcul - CALCULATEDX WEB
+Calculatrice - CALCULATEDX PRO
 {% endblock %}
 
 {% block content %}
 
-    <h2>Effectuer un calcul</h2>
+<section class="calculator-page">
 
-    <form method="POST">
+    <div class="container">
 
-        <label for="nombre1">Premier nombre :</label>
-        <input 
-            type="number" 
-            id="nombre1" 
-            name="nombre1"
-            step="any"
-            required
-        >
+        <div class="calculator-heading">
 
-        <label for="operation">Opération :</label>
-        <select id="operation" name="operation">
-            <option value="addition">Addition</option>
-            <option value="soustraction">Soustraction</option>
-            <option value="multiplication">Multiplication</option>
-            <option value="division">Division</option>
-        </select>
+            <span class="page-badge">
+                ESPACE DE CALCUL
+            </span>
 
-        <label for="nombre2">Deuxième nombre :</label>
-        <input type="number" id="nombre2" name="nombre2">
+            <h1>Calculatrice</h1>
 
-        <button type="submit">Calculer</button>
-    </form>
+            <p>
+                Effectuez vos opérations rapidement
+                avec une interface simple et intuitive.
+            </p>
 
-{% if resultat is not none %}
+        </div>
 
-    <h3>Résultat</h3>
-    <p>{{ resultat }}</p>
 
-{% endif %}
+        <div class="calculator-layout">
 
-{% if erreur %}
-    <p>{{ erreur }}</p>
-{% endif %}
+            <!-- Formulaire de calcul -->
+            <div class="calculator-card">
+
+                <div class="card-heading">
+                    <h2>Nouveau calcul</h2>
+                    <p>Renseignez les valeurs ci-dessous.</p>
+                </div>
+
+                <form method="POST" class="calculator-form">
+
+                    <div class="form-group">
+
+                        <label for="nombre1">
+                            Premier nombre
+                        </label>
+
+                        <input
+                            type="number"
+                            id="nombre1"
+                            name="nombre1"
+                            step="any"
+                            placeholder="Ex : 150"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="operation">
+                            Opération mathématique
+                        </label>
+
+                        <select
+                            id="operation"
+                            name="operation"
+                            required
+                        >
+
+                            <option value="addition">
+                                + Addition
+                            </option>
+
+                            <option value="soustraction">
+                                − Soustraction
+                            </option>
+
+                            <option value="multiplication">
+                                × Multiplication
+                            </option>
+
+                            <option value="division">
+                                ÷ Division
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="nombre2">
+                            Deuxième nombre
+                        </label>
+
+                        <input
+                            type="number"
+                            id="nombre2"
+                            name="nombre2"
+                            step="any"
+                            placeholder="Ex : 25"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button type="submit" class="calculate-button">
+                        Calculer maintenant →
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- Zone de résultat -->
+            <div class="result-card">
+
+                <div class="result-card-header">
+
+                    <span>RÉSULTAT DU CALCUL</span>
+
+                    <span class="result-indicator"></span>
+
+                </div>
+
+
+                {% if erreur %}
+
+                    <div class="result-error">
+                        <h3>Erreur de calcul</h3>
+                        <p>{{ erreur }}</p>
+                    </div>
+
+                {% elif resultat is not none %}
+
+                    <div class="result-success">
+
+                        <p>Votre résultat</p>
+
+                        <h2>{{ resultat }}</h2>
+
+                        <span class="result-status">
+                            Calcul effectué avec succès
+                        </span>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="result-empty">
+
+                        <div class="result-placeholder">
+                            =
+                        </div>
+
+                        <h3>En attente d'un calcul</h3>
+
+                        <p>
+                            Saisissez vos nombres et choisissez
+                            une opération pour afficher le résultat.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+                <div class="result-footer">
+
+                    <a href="{{ url_for('historique') }}">
+                        Consulter l'historique →
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
 {% endblock %}

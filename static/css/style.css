@@ -1,22 +1,1099 @@
-body {
-    font-family: Arial, sans-serif;
+/* ================================
+   CALCULATEDX PRO
+   Base UI
+================================ */
+
+* {
     margin: 0;
-    background-color: #f4f4f4;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-header {
-    padding: 20px;
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #3730a3;
+    --background: #f6f7fb;
+    --surface: #ffffff;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* ================================
+   CONTENEUR
+================================ */
+
+.container {
+    width: min(1120px, 92%);
+    margin: 0 auto;
+}
+
+
+/* ================================
+   NAVBAR
+================================ */
+
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-content {
+    min-height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+
+/* ================================
+   IDENTITÉ
+================================ */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.brand-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--primary);
+    color: white;
+
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.brand-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: -0.5px;
+}
+
+.brand-name small {
+    background: #eef2ff;
+    color: var(--primary);
+    padding: 3px 6px;
+    border-radius: 6px;
+    font-size: 10px;
+}
+
+
+/* ================================
+   NAVIGATION
+================================ */
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+
+    padding: 10px 14px;
+    border-radius: 10px;
+
+    transition: 0.2s ease;
+}
+
+.nav-links a:hover {
+    background: #f3f4f6;
+    color: var(--primary);
+}
+
+
+/* ================================
+   CONTENU PRINCIPAL
+================================ */
+
+.main-content {
+    flex: 1;
+    width: 100%;
+}
+
+
+/* ================================
+   FOOTER
+================================ */
+
+.footer {
+    margin-top: 80px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.footer-content {
+    min-height: 80px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.footer-content > p:first-child {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.footer-tech {
+    font-size: 12px;
+}
+
+
+/* ================================
+   PAGE D'ACCUEIL — HERO
+================================ */
+
+.hero {
+    padding: 90px 0 70px;
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: center;
+    gap: 80px;
+}
+
+.hero-badge {
+    display: inline-block;
+    margin-bottom: 24px;
+    padding: 8px 12px;
+
+    background: #eef2ff;
+    color: var(--primary);
+
+    border-radius: 8px;
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.hero-content h1 {
+    max-width: 680px;
+
+    font-size: clamp(42px, 6vw, 68px);
+    line-height: 1.05;
+    letter-spacing: -3px;
+}
+
+.hero-content h1 span {
+    display: block;
+    color: var(--primary);
+}
+
+.hero-description {
+    max-width: 600px;
+    margin-top: 26px;
+
+    color: var(--text-muted);
+
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    margin-top: 34px;
+}
+
+
+/* ================================
+   BOUTONS
+================================ */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 14px 20px;
+
+    border-radius: 12px;
+
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+
+    transition: 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+
+/* ================================
+   APERÇU CALCULATRICE
+================================ */
+
+.calculator-preview {
+    padding: 28px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 24px;
+
+    box-shadow: var(--shadow);
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.status-dot {
+    width: 9px;
+    height: 9px;
+
+    background: #22c55e;
+
+    border-radius: 50%;
+}
+
+.preview-operation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+
+    min-height: 150px;
+
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.preview-operation .operator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 48px;
+
+    background: #eef2ff;
+    color: var(--primary);
+
+    border-radius: 14px;
+}
+
+.preview-divider {
+    height: 1px;
+    background: var(--border);
+}
+
+.preview-result {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-top: 24px;
+}
+
+.preview-result span {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.preview-result strong {
+    color: var(--primary);
+
+    font-size: 34px;
+}
+
+
+/* ================================
+   FONCTIONNALITÉS
+================================ */
+
+.features {
+    padding: 70px 0 90px;
+}
+
+.section-heading {
+    margin-bottom: 34px;
+}
+
+.section-heading span {
+    color: var(--primary);
+
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.section-heading h2 {
+    margin-top: 8px;
+
+    font-size: 32px;
+    letter-spacing: -1px;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+.feature-card {
+    display: block;
+
+    padding: 28px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+
+    color: var(--text);
+    text-decoration: none;
+
+    transition: 0.25s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+
+    border-color: #c7d2fe;
+
+    box-shadow: var(--shadow);
+}
+
+.feature-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 24px;
+
+    background: #eef2ff;
+    color: var(--primary);
+
+    border-radius: 12px;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.feature-card h3 {
+    margin-bottom: 10px;
+
+    font-size: 18px;
+}
+
+.feature-card p {
+    min-height: 70px;
+
+    color: var(--text-muted);
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.feature-link {
+    display: inline-block;
+
+    margin-top: 18px;
+
+    color: var(--primary);
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.api-endpoint {
+    display: inline-block;
+
+    margin-top: 18px;
+    padding: 8px 10px;
+
+    background: #f3f4f6;
+
+    border-radius: 7px;
+
+    color: var(--text);
+
+    font-family: monospace;
+    font-size: 12px;
+}
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 700px) {
+
+    .navbar-content {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 0;
+    }
+
+    .nav-links {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .nav-links a {
+        white-space: nowrap;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .hero {
+    padding: 55px 0;
+}
+
+.hero-grid {
+    grid-template-columns: 1fr;
+    gap: 45px;
+}
+
+.hero-content h1 {
+    font-size: 42px;
+    letter-spacing: -2px;
+}
+
+.hero-description {
+    font-size: 15px;
+}
+
+.hero-actions {
+    flex-direction: column;
+}
+
+.btn {
+    width: 100%;
+}
+
+.feature-grid {
+    grid-template-columns: 1fr;
+}
+
+.features {
+    padding: 40px 0 60px;
+}
+}
+
+
+/* ======================================
+   CALCULATEDX PRO — PAGE CALCULATRICE
+====================================== */
+
+.calculator-page {
+    padding: 70px 0 100px;
+}
+
+/* En-tête */
+
+.calculator-heading {
+    text-align: center;
+    margin-bottom: 45px;
+}
+
+.page-badge {
+    display: inline-block;
+    padding: 8px 14px;
+    background: #eef2ff;
+    color: var(--primary);
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.calculator-heading h1 {
+    margin-top: 18px;
+    font-size: clamp(34px, 5vw, 48px);
+    letter-spacing: -2px;
+}
+
+.calculator-heading p {
+    margin-top: 12px;
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Disposition principale */
+
+.calculator-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 28px;
+    align-items: stretch;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Cartes */
+
+.calculator-card,
+.result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 34px;
+}
+
+.card-heading {
+    margin-bottom: 30px;
+}
+
+.card-heading h2 {
+    font-size: 23px;
+    letter-spacing: -0.6px;
+}
+
+.card-heading p {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Formulaire */
+
+.calculator-form {
+    display: flex;
+    flex-direction: column;
+    gap: 23px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    height: 54px;
+    padding: 0 16px;
+
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    background: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.10);
+}
+
+.form-group input::placeholder {
+    color: #9ca3af;
+}
+
+/* Bouton principal */
+
+.calculate-button {
+    width: 100%;
+    min-height: 56px;
+    margin-top: 8px;
+    padding: 15px 20px;
+
+    background: var(--primary);
+    color: white;
+
+    border: none;
+    border-radius: 12px;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.calculate-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.18);
+}
+
+.calculate-button:active {
+    transform: translateY(0);
+}
+
+/* ======================================
+   CARTE DE RÉSULTAT
+====================================== */
+
+.result-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 470px;
+}
+
+.result-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.result-card-header span:first-child {
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.result-indicator {
+    width: 10px;
+    height: 10px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+
+/* État initial */
+
+.result-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 0;
+}
+
+.result-placeholder {
+    width: 76px;
+    height: 76px;
+    margin-bottom: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #eef2ff;
+    color: var(--primary);
+    border-radius: 22px;
+
+    font-size: 38px;
+    font-weight: 700;
+}
+
+.result-empty h3 {
+    margin-bottom: 12px;
+    font-size: 19px;
+}
+
+.result-empty p {
+    max-width: 270px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* Résultat réussi */
+
+.result-success {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 35px 0;
+}
+
+.result-success > p {
+    margin-bottom: 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.result-success h2 {
+    max-width: 100%;
+    color: var(--primary);
+    font-size: clamp(42px, 5vw, 64px);
+    letter-spacing: -2px;
+    overflow-wrap: anywhere;
+}
+
+.result-status {
+    margin-top: 20px;
+    padding: 9px 14px;
+
+    background: #ecfdf5;
+    color: #047857;
+    border-radius: 30px;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Erreurs */
+
+.result-error {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: 30px 0;
+}
+
+.result-error h3 {
+    margin-bottom: 12px;
+    color: #dc2626;
+}
+
+.result-error p {
+    color: #991b1b;
+    line-height: 1.6;
+}
+
+/* Pied de carte */
+
+.result-footer {
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
     text-align: center;
 }
 
-main {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-    background-color: white;
+.result-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
 }
 
-footer {
-    padding: 20px;
+.result-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ======================================
+   RESPONSIVE CALCULATRICE
+====================================== */
+
+@media (max-width: 800px) {
+
+    .calculator-page {
+        padding: 45px 0 70px;
+    }
+
+    .calculator-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .calculator-card,
+    .result-card {
+        padding: 25px;
+    }
+
+    .result-card {
+        min-height: 330px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .calculator-heading h1 {
+        font-size: 34px;
+    }
+
+    .calculator-heading p {
+        font-size: 14px;
+    }
+
+    .calculator-card,
+    .result-card {
+        padding: 20px;
+        border-radius: 18px;
+    }
+}
+
+
+/* ======================================
+   CALCULATEDX PRO — HISTORIQUE
+====================================== */
+
+.history-page {
+    padding: 70px 0 100px;
+}
+
+/* En-tête */
+
+.history-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 36px;
+}
+
+.history-heading h1 {
+    margin-top: 18px;
+    font-size: clamp(32px, 4vw, 44px);
+    letter-spacing: -1.5px;
+}
+
+.history-heading p {
+    margin-top: 12px;
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Carte historique */
+
+.history-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.history-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 28px 30px;
+    border-bottom: 1px solid var(--border);
+}
+
+.history-card-header h2 {
+    font-size: 19px;
+}
+
+.history-card-header p {
+    margin-top: 7px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.history-count {
+    padding: 9px 13px;
+    background: #eef2ff;
+    color: var(--primary);
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* Tableau */
+
+.history-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.history-table thead {
+    background: #f9fafb;
+}
+
+.history-table th {
+    padding: 18px 30px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.history-table td {
+    padding: 20px 30px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.history-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.history-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.history-operation {
+    font-family: Consolas, monospace;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.history-status {
+    display: inline-block;
+    padding: 7px 11px;
+    background: #ecfdf5;
+    color: #047857;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* État vide */
+
+.history-empty {
+    min-height: 360px;
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+}
+
+.history-empty-icon {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #eef2ff;
+    color: var(--primary);
+    border-radius: 20px;
+
+    font-size: 36px;
+}
+
+.history-empty h3 {
+    margin-bottom: 12px;
+    font-size: 20px;
+}
+
+.history-empty p {
+    max-width: 340px;
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* Responsive */
+
+@media (max-width: 700px) {
+
+    .history-page {
+        padding: 45px 0 70px;
+    }
+
+    .history-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .history-heading .btn {
+        width: 100%;
+    }
+
+    .history-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 22px;
+    }
+
+    .history-table th,
+    .history-table td {
+        padding: 16px;
+        white-space: nowrap;
+    }
 }
