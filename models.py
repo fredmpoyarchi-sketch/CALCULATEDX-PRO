@@ -1,18 +1,26 @@
+from database import (
+    initialiser_base,
+    enregistrer_calcul,
+    lire_historique
+)
+
 class Calculatrice:
 
     def __init__(self):
-        self._historique = []
+        initialiser_base()
+        self._historique = lire_historique()
 
-    def _ajouter_historique(self,a, operateur, b, resultat):
+    def _ajouter_historique(self, a, operateur, b, resultat):
+        enregistrer_calcul(a, operateur, b, resultat)
         calcul = f"{a} {operateur} {b} = {resultat}"
         self._historique.append(calcul)
 
     def obtenir_historique(self):
-        return self._historique
+        return lire_historique()
 
     def additionner(self, a, b):
         resultat = a + b
-        self._ajouter_historique(a, "+", b, resultat    )
+        self._ajouter_historique(a, "+", b, resultat)
         return resultat
 
     def soustraire(self, a, b):

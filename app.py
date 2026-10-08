@@ -45,11 +45,11 @@ def calcul():
 
 @app.route("/historique")
 def historique():
-    historique_calculs = calculatrice.obtenir_historique()
+    operations = calculatrice.obtenir_historique()
 
     return render_template(
         "historique.html",
-        historique=historique_calculs
+        historique=operations
     )
 
 @app.route("/api/v1/calculer", methods=["POST"])
