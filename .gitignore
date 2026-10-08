@@ -10,3 +10,5 @@ __pycache__/
 
 # Fichiers VS Code locaux
 .vscode/
+
+*.db

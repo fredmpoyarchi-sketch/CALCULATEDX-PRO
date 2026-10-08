@@ -1,17 +1,155 @@
 {% extends "base.html" %}
 
-
 {% block title %}
-Accueil - CALCULATEDX WEB
+Accueil - CALCULATEDX PRO
 {% endblock %}
-
 
 {% block content %}
 
-    <h2>Bienvenue</h2>
+<section class="hero">
 
-    <p>
-        Bienvenue sur notre calculatrice en ligne.
-    </p>
+    <div class="container hero-grid">
+
+        <!-- Présentation -->
+        <div class="hero-content">
+
+            <span class="hero-badge">
+                PYTHON • FLASK • REST API
+            </span>
+
+            <h1>
+                Calculez plus vite.
+                <span>Travaillez plus intelligemment.</span>
+            </h1>
+
+            <p class="hero-description">
+                CALCULATEDX PRO est une calculatrice web moderne
+                permettant d'effectuer vos opérations, de consulter
+                votre historique et d'exploiter une API REST.
+            </p>
+
+            <div class="hero-actions">
+
+                <a href="{{ url_for('calcul') }}"
+                   class="btn btn-primary">
+                    Commencer un calcul →
+                </a>
+
+                <a href="{{ url_for('historique') }}"
+                   class="btn btn-secondary">
+                    Voir l'historique
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- Aperçu calculatrice -->
+        <div class="calculator-preview">
+
+            <div class="preview-header">
+                <span>CALCULATOR</span>
+                <span class="status-dot"></span>
+            </div>
+
+            <div class="preview-operation">
+                <span>150</span>
+                <span class="operator">+</span>
+                <span>25</span>
+            </div>
+
+            <div class="preview-divider"></div>
+
+            <div class="preview-result">
+                <span>Résultat</span>
+                <strong>175</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="features">
+
+    <div class="container">
+
+        <div class="section-heading">
+            <span>FONCTIONNALITÉS</span>
+            <h2>Tout ce dont vous avez besoin.</h2>
+        </div>
+
+
+        <div class="feature-grid">
+
+            <a href="{{ url_for('calcul') }}"
+               class="feature-card">
+
+                <div class="feature-icon">
+                    +
+                </div>
+
+                <h3>Calculatrice</h3>
+
+                <p>
+                    Effectuez rapidement vos additions,
+                    soustractions, multiplications et divisions.
+                </p>
+
+                <span class="feature-link">
+                    Effectuer un calcul →
+                </span>
+
+            </a>
+
+
+            <a href="{{ url_for('historique') }}"
+               class="feature-card">
+
+                <div class="feature-icon">
+                    ↺
+                </div>
+
+                <h3>Historique</h3>
+
+                <p>
+                    Retrouvez les opérations réalisées pendant
+                    votre session de travail.
+                </p>
+
+                <span class="feature-link">
+                    Voir l'historique →
+                </span>
+
+            </a>
+
+
+            <div class="feature-card">
+
+                <div class="feature-icon">
+                    API
+                </div>
+
+                <h3>REST API</h3>
+
+                <p>
+                    Utilisez le moteur de calcul depuis
+                    d'autres applications grâce à notre API JSON.
+                </p>
+
+                <span class="api-endpoint">
+                    POST /api/v1/calculer
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
 {% endblock %}

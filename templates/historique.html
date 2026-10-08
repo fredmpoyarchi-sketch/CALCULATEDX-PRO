@@ -1,21 +1,264 @@
 {% extends "base.html" %}
 
 {% block title %}
-Historique - CALCULATEDX WEB
+Historique - CALCULATEDX PRO
 {% endblock %}
 
 {% block content %}
 
-{% if historique %}
+<section class="history-page">
+    <div class="container">
 
+        <div class="history-heading">
+            <div>
+                <span class="page-badge">
+                    SUIVI DES OPÉRATIONS
+                </span>
+
+                <h1>Historique des calculs</h1>
+
+                <p>
+                    Consultez les opérations réalisées
+                    pendant votre session.
+                </p>
+            </div>
+
+            <a href="{{ url_for('calcul') }}"
+               class="btn btn-primary">
+                + Nouveau calcul
+            </a>
+        </div>
+
+        <div class="history-card">
+
+            <div class="history-card-header">
+                <div>
+                    <h2>Opérations enregistrées</h2>
+                    <p>Liste des calculs effectués</p>
+                </div>
+
+                <span class="history-count">
+                    {{ historique|length }} opération(s)
+                </span>
+            </div>
+
+            {% if historique %}
+
+            <div class="history-filters">
+
+    <input
+        type="search"
+        id="history-search"
+        placeholder="Rechercher un nombre ou un résultat..."
+        aria-label="Rechercher dans l'historique"
+    >
+
+    <select id="operation-filter"
+            aria-label="Filtrer par opération">
+
+        <option value="">Toutes les opérations</option>
+        <option value="+">Addition (+)</option>
+        <option value="-">Soustraction (−)</option>
+        <option value="*">Multiplication (×)</option>
+        <option value="/">Division (÷)</option>
+
+    </select>
+
+    <button
+        type="button"
+        id="reset-history-filters"
+        class="reset-filter-button"
+    >
+        Réinitialiser
+    </button>
+
+</div>
+
+<div class="history-filter-summary">
+    <span id="history-results-count" aria-live="polite">
+        {{ historique|length }} résultat(s) affiché(s)
+    </span>
+</div>
+
+            <div class="history-table-wrapper">
+
+<div id="history-no-results" class="history-no-results" hidden>
+    <h3>Aucun résultat trouvé</h3>
+    <p>Modifiez votre recherche ou sélectionnez une autre opération.</p>
+</div>
+
+    <table class="history-table">
+
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Date et heure</th>
+                <th>Nombre 1</th>
+                <th>Opération</th>
+                <th>Nombre 2</th>
+                <th>Résultat</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
     {% for calcul in historique %}
-        <p>{{ calcul }}</p>
+
+    <tr class="history-data-row"
+        data-operation="{{ calcul.operation }}">
+
+        <td>{{ loop.index }}</td>
+
+        <td>
+            {{ calcul.date_creation[8:10] }}/{{ calcul.date_creation[5:7] }}/{{ calcul.date_creation[0:4] }}
+            <span class="history-time">
+                {{ calcul.date_creation[11:16] }}
+            </span>
+        </td>
+
+        <td>{{ "%g"|format(calcul.nombre1) }}</td>
+
+        <td class="history-operation">
+            {{ calcul.operation }}
+        </td>
+
+        <td>{{ "%g"|format(calcul.nombre2) }}</td>
+
+        <td class="history-operation">
+            <strong>{{ "%g"|format(calcul.resultat) }}</strong>
+        </td>
+
+        <td>
+            <span class="history-status">
+                Terminé
+            </span>
+        </td>
+
+        <td>
+            <form
+                action="{{ url_for('supprimer_operation', calcul_id=calcul.id) }}"
+                method="POST"
+                onsubmit="return confirm('Voulez-vous vraiment supprimer ce calcul ?');"
+            >
+                <button type="submit" class="delete-button">
+                    Supprimer
+                </button>
+            </form>
+        </td>
+    </tr>
+
     {% endfor %}
+</tbody>
 
-{% else %}
+    </table>
 
-    <p>Aucun calcul dans l'historique.</p>
+</div>
 
-{% endif %}
+            {% else %}
+
+            <div class="history-empty">
+
+                <div class="history-empty-icon">
+                    ↺
+                </div>
+
+                <h3>Aucun calcul enregistré</h3>
+
+                <p>
+                    Vos opérations apparaîtront ici
+                    après votre premier calcul.
+                </p>
+
+                <a href="{{ url_for('calcul') }}"
+                   class="btn btn-primary">
+                    Effectuer un calcul →
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput = document.getElementById("history-search");
+    const operationFilter = document.getElementById("operation-filter");
+    const resetButton = document.getElementById("reset-history-filters");
+
+    const rows = document.querySelectorAll(".history-data-row");
+
+    const resultsCount = document.getElementById("history-results-count");
+    const noResults = document.getElementById("history-no-results");
+
+    if (!searchInput || !operationFilter || !resetButton) {
+        return;
+    }
+
+    function filtrerHistorique() {
+
+        const recherche = searchInput.value.trim().toLowerCase();
+        const operation = operationFilter.value;
+
+        let nombreVisible = 0;
+
+        rows.forEach(function (row) {
+
+            const cellules = row.querySelectorAll("td");
+
+            const contenu = [
+                cellules[2]?.textContent,
+                cellules[4]?.textContent,
+                cellules[5]?.textContent
+            ].join(" ").toLowerCase();
+
+            const operationLigne = row.dataset.operation;
+
+            const correspondRecherche = contenu.includes(recherche);
+
+            const correspondOperation =
+                operation === "" || operationLigne === operation;
+
+            row.hidden = !(correspondRecherche && correspondOperation);
+
+            if (!row.hidden) {
+                nombreVisible++;
+            }
+        });
+
+        if (resultsCount) {
+            resultsCount.textContent =
+                `${nombreVisible} résultat(s) affiché(s)`;
+        }
+
+        if (noResults) {
+            noResults.hidden = nombreVisible !== 0;
+        }
+    }
+
+    // 1. Recherche
+    searchInput.addEventListener("input", filtrerHistorique);
+
+    // 2. Filtre par opération
+    operationFilter.addEventListener("change", filtrerHistorique);
+
+    // 3. Réinitialisation des filtres
+    resetButton.addEventListener("click", function () {
+
+        searchInput.value = "";
+        operationFilter.value = "";
+
+        filtrerHistorique();
+
+        searchInput.focus();
+    });
+
+});
+</script>
 
 {% endblock %}
