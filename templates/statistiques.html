@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Statistiques - CALCULATEDX PRO{% endblock %}
+{% block content %}
+{% set noms = {'+': 'Addition', '-': 'Soustraction', '*': 'Multiplication', '/': 'Division'} %}
+<section class="history-page statistics-page">
+    <div class="container">
+        <div class="history-heading">
+            <div>
+                <span class="page-badge">VUE D’ENSEMBLE</span>
+                <h1>Statistiques des calculs</h1>
+                <p>Vos opérations en un regard, depuis le premier calcul enregistré.</p>
+            </div>
+            <a class="btn btn-primary" href="{{ url_for('calcul') }}">+ Nouveau calcul</a>
+        </div>
+        {% if statistiques is none %}
+        <div class="history-card history-empty" role="alert">
+            <h2>Statistiques indisponibles</h2>
+            <p>Impossible de charger les statistiques. Réessayez dans quelques instants.</p>
+        </div>
+        {% else %}
+        <dl class="statistics-indicators">
+            <div class="statistics-card"><dt>Total des calculs</dt><dd id="stats-total">{{ statistiques.total }}</dd></div>
+            <div class="statistics-card"><dt>Opération la plus utilisée</dt><dd id="stats-favorite">{{ noms.get(dominante.operation, dominante.operation) if dominante else 'Aucune' }}</dd><p>En cas d’égalité, première opération par ordre de symbole.</p></div>
+            <div class="statistics-card"><dt>Jours actifs</dt><dd id="stats-days">{{ statistiques.par_jour|length }}</dd></div>
+        </dl>
+        {% if statistiques.total == 0 %}
+        <div class="history-card history-empty">
+            <h2>Aucun calcul enregistré</h2>
+            <p>Effectuez votre premier calcul pour découvrir la répartition et l’évolution de votre activité.</p>
+            <a class="btn btn-primary" href="{{ url_for('calcul') }}">Commencer un calcul</a>
+        </div>
+        {% else %}
+        <div class="statistics-charts">
+            <section class="statistics-card" aria-labelledby="operations-title">
+                <h2 id="operations-title">Répartition des opérations</h2>
+                <p>Nombre de calculs par opération</p>
+                <ul class="statistics-bars">
+                    {% for ligne in statistiques.par_operation %}
+                    <li>
+                        <div class="statistics-bar-label"><span>{{ noms.get(ligne.operation, ligne.operation) }}</span><strong>{{ ligne.total }} <small>({{ (ligne.total * 100 / statistiques.total)|round(1) }} %)</small></strong></div>
+                        <meter min="0" max="{{ statistiques.total }}" value="{{ ligne.total }}" aria-label="{{ noms.get(ligne.operation, ligne.operation) }}">{{ ligne.total }} sur {{ statistiques.total }}</meter>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            <section class="statistics-card" aria-labelledby="daily-title">
+                <h2 id="daily-title">Évolution quotidienne</h2>
+                <p>Jours actifs, du plus ancien au plus récent · UTC</p>
+                <ol class="statistics-bars statistics-daily">
+                    {% for ligne in statistiques.par_jour %}
+                    <li>
+                        <div class="statistics-bar-label"><span>{{ ligne.jour if ligne.jour else 'Date inconnue' }}</span><strong>{{ ligne.total }}</strong></div>
+                        <meter min="0" max="{{ maximum_journalier }}" value="{{ ligne.total }}" aria-label="Calculs du {{ ligne.jour }}">{{ ligne.total }}</meter>
+                    </li>
+                    {% endfor %}
+                </ol>
+            </section>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

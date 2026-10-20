@@ -193,6 +193,19 @@ def api_calculer():
         "resultat": resultat
     }), 200
 
+@app.route("/statistiques", methods=["GET"])
+def statistiques():
+    try:
+        donnees = obtenir_statistiques()
+    except sqlite3.Error:
+        app.logger.exception("Erreur SQLite lors de la lecture du tableau de bord.")
+        return render_template("statistiques.html", statistiques=None), 500
+    dominante = max(donnees["par_operation"], key=lambda ligne: ligne["total"], default=None)
+    maximum_journalier = max((ligne["total"] for ligne in donnees["par_jour"]), default=1)
+    return render_template("statistiques.html", statistiques=donnees,
+                           dominante=dominante, maximum_journalier=maximum_journalier)
+
+
 @app.route("/api/v1/statistiques", methods=["GET"])
 def api_statistiques():
     try:
