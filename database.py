@@ -1,4 +1,5 @@
 import sqlite3
+from math import isfinite
 from contextlib import closing
 from pathlib import Path
 
@@ -65,6 +66,51 @@ def lire_historique():
         ).fetchall()
 
     return [dict(ligne) for ligne in lignes]
+
+
+def lire_historique_pagine(page=1, taille=20, recherche="", operation="") -> dict:
+    """Retourne une page bornée ; les identifiants décroissants fixent l'ordre d'insertion."""
+    if not isinstance(taille, int) or isinstance(taille, bool) or taille < 1:
+        raise ValueError("La taille de page doit être un entier positif.")
+    try:
+        page = max(1, int(page))
+    except (TypeError, ValueError, OverflowError):
+        page = 1
+    if operation not in ("", "+", "-", "*", "/"):
+        raise ValueError("Filtre d'opération non valide.")
+    recherche = recherche.strip()
+    criteres, parametres = [], []
+    if recherche:
+        # Recherche littérale : %, _ et les guillemets ne sont pas des jokers SQL.
+        colonnes = ("nombre1", "nombre2", "resultat")
+        recherche_sql = [f"instr(CAST({colonne} AS TEXT), ?) > 0" for colonne in colonnes]
+        parametres.extend([recherche] * 3)
+        try:
+            nombre = float(recherche)
+        except ValueError:
+            nombre = None
+        if nombre is not None and isfinite(nombre):
+            recherche_sql.extend(f"{colonne} = ?" for colonne in colonnes)
+            parametres.extend([nombre] * 3)
+        criteres.append("(" + " OR ".join(recherche_sql) + ")")
+    if operation:
+        criteres.append("operation = ?")
+        parametres.append(operation)
+    clause = " WHERE " + " AND ".join(criteres) if criteres else ""
+    with closing(obtenir_connexion()) as connexion:
+        with connexion:
+            connexion.execute("BEGIN")
+            total = connexion.execute("SELECT COUNT(*) FROM calculs" + clause, parametres).fetchone()[0]
+            pages = max(1, (total + taille - 1) // taille)
+            page = min(page, pages)
+            lignes = connexion.execute(
+                """SELECT id, nombre1, operation, nombre2, resultat, date_creation
+                FROM calculs""" + clause + " ORDER BY id DESC LIMIT ? OFFSET ?",
+                [*parametres, taille, (page - 1) * taille],
+            ).fetchall()
+    return {"calculs": [dict(ligne) for ligne in lignes], "total": total,
+            "page": page, "pages": pages, "taille": taille,
+            "recherche": recherche, "operation": operation}
 
 
 def obtenir_statistiques() -> dict:
