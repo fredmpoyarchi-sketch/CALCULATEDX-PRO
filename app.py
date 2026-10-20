@@ -1,9 +1,10 @@
 import os
 import secrets
+import sqlite3
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from models import Calculatrice
-from database import supprimer_calcul
+from database import obtenir_statistiques, supprimer_calcul
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("CALCULATEDX_SECRET_KEY")
@@ -191,6 +192,15 @@ def api_calculer():
     return jsonify({
         "resultat": resultat
     }), 200
+
+@app.route("/api/v1/statistiques", methods=["GET"])
+def api_statistiques():
+    try:
+        return jsonify(obtenir_statistiques()), 200
+    except sqlite3.Error:
+        app.logger.exception("Erreur SQLite lors de la lecture des statistiques.")
+        return jsonify({"erreur": "Impossible de récupérer les statistiques."}), 500
+
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=False)
