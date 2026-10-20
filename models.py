@@ -1,3 +1,5 @@
+from math import isfinite
+
 from database import (
     initialiser_base,
     enregistrer_calcul,
@@ -11,6 +13,12 @@ class Calculatrice:
         self._historique = lire_historique()
 
     def _ajouter_historique(self, a, operateur, b, resultat):
+        try:
+            fini = isfinite(resultat)
+        except OverflowError:
+            fini = False
+        if not fini:
+            raise ValueError("Le résultat doit être un nombre fini.")
         enregistrer_calcul(a, operateur, b, resultat)
         calcul = f"{a} {operateur} {b} = {resultat}"
         self._historique.append(calcul)
