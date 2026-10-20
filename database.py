@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 # Emplacement de la base de données
@@ -64,6 +65,36 @@ def lire_historique():
         ).fetchall()
 
     return [dict(ligne) for ligne in lignes]
+
+
+def obtenir_statistiques() -> dict:
+    """Agrège les calculs enregistrés ; les jours sont les dates SQLite (UTC)."""
+    with closing(obtenir_connexion()) as connexion:
+        # Un même instantané pour les trois agrégations, même en cas d'écriture concurrente.
+        with connexion:
+            connexion.execute("BEGIN")
+            total = connexion.execute("SELECT COUNT(*) FROM calculs").fetchone()[0]
+            par_operation = connexion.execute(
+                """
+                SELECT operation, COUNT(*) AS total
+                FROM calculs
+                GROUP BY operation
+                ORDER BY operation
+                """
+            ).fetchall()
+            par_jour = connexion.execute(
+                """
+                SELECT DATE(date_creation) AS jour, COUNT(*) AS total
+                FROM calculs
+                GROUP BY DATE(date_creation)
+                ORDER BY jour
+                """
+            ).fetchall()
+    return {
+        "total": total,
+        "par_operation": [dict(ligne) for ligne in par_operation],
+        "par_jour": [dict(ligne) for ligne in par_jour],
+    }
 
 
 def supprimer_calcul(calcul_id):
