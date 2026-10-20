@@ -10,7 +10,6 @@ class Calculatrice:
 
     def __init__(self):
         initialiser_base()
-        self._historique = lire_historique()
 
     def _ajouter_historique(self, a, operateur, b, resultat):
         try:
@@ -20,8 +19,6 @@ class Calculatrice:
         if not fini:
             raise ValueError("Le résultat doit être un nombre fini.")
         enregistrer_calcul(a, operateur, b, resultat)
-        calcul = f"{a} {operateur} {b} = {resultat}"
-        self._historique.append(calcul)
 
     def obtenir_historique(self):
         return lire_historique()
@@ -62,7 +59,7 @@ if __name__ == "__main__":
         print(resultat2)
         print(resultat3)
         print(resultat4)
-        print(calculatrice._historique)
+        print(calculatrice.obtenir_historique())
 
     except ValueError as e:
         print(f"Erreur: {e}")
