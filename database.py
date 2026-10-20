@@ -49,7 +49,7 @@ def enregistrer_calcul(nombre1, operation, nombre2, resultat):
 def lire_historique():
     """Récupère les calculs détaillés depuis SQLite."""
 
-    with obtenir_connexion() as connexion:
+    with closing(obtenir_connexion()) as connexion:
         lignes = connexion.execute(
             """
             SELECT
@@ -100,15 +100,14 @@ def obtenir_statistiques() -> dict:
 def supprimer_calcul(calcul_id):
     """Supprime un calcul à partir de son identifiant."""
 
-    with obtenir_connexion() as connexion:
-        curseur = connexion.execute(
-            """
-            DELETE FROM calculs
-            WHERE id = ?
-            """,
-            (calcul_id,)
-        )
-
-        connexion.commit()
-
-        return curseur.rowcount > 0
+    with closing(obtenir_connexion()) as connexion:
+        with connexion:
+            curseur = connexion.execute(
+                """
+                DELETE FROM calculs
+                WHERE id = ?
+                """,
+                (calcul_id,)
+            )
+            supprime = curseur.rowcount > 0
+        return supprime

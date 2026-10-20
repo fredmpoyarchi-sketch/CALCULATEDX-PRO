@@ -105,7 +105,11 @@ def calcul():
 
 @app.route("/historique")
 def historique():
-    operations = calculatrice.obtenir_historique()
+    try:
+        operations = calculatrice.obtenir_historique()
+    except sqlite3.Error:
+        app.logger.exception("Erreur SQLite lors de la lecture de l'historique.")
+        return "Impossible de charger l'historique. Réessayez dans quelques instants.", 500
 
     return render_template(
         "historique.html",
@@ -116,7 +120,13 @@ def historique():
 @app.route("/historique/supprimer/<int:calcul_id>", methods=["POST"])
 def supprimer_operation(calcul_id):
 
-    if not supprimer_calcul(calcul_id):
+    try:
+        supprime = supprimer_calcul(calcul_id)
+    except sqlite3.Error:
+        app.logger.exception("Erreur SQLite lors de la suppression d'un calcul.")
+        return "Impossible de supprimer ce calcul. Réessayez dans quelques instants.", 500
+
+    if not supprime:
         return "Calcul introuvable : aucune opération ne correspond à cet identifiant.", 404
 
     return redirect(url_for("historique"))
