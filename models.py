@@ -1,4 +1,5 @@
 from math import isfinite
+from decimal import Decimal, InvalidOperation
 
 from database import (
     initialiser_base,
@@ -6,6 +7,28 @@ from database import (
     lire_historique,
     lire_historique_pagine
 )
+
+def normaliser_nombre(valeur):
+    """Convertit en binary64 fini ; une entrée entière ne doit perdre aucun bit."""
+    if isinstance(valeur, bool) or not isinstance(valeur, (int, float, str)):
+        raise ValueError("Une valeur numérique est requise.")
+    try:
+        nombre = float(valeur)
+    except (ValueError, OverflowError):
+        raise ValueError("Le nombre doit être représentable en flottant fini.") from None
+    if not isfinite(nombre):
+        raise ValueError("Le nombre doit être fini.")
+    if isinstance(valeur, int) and nombre != valeur:
+        raise ValueError("Cet entier ne peut pas être représenté sans perte en flottant.")
+    if isinstance(valeur, str) and valeur.strip().lstrip('+-').isdigit():
+        try:
+            decimal = Decimal(valeur)
+        except InvalidOperation:
+            raise ValueError("Une valeur numérique est requise.") from None
+        if decimal == decimal.to_integral_value() and Decimal.from_float(nombre) != decimal:
+            raise ValueError("Cet entier ne peut pas être représenté sans perte en flottant.")
+    return nombre
+
 
 class Calculatrice:
 
@@ -30,21 +53,25 @@ class Calculatrice:
                                      date_debut=date_debut, date_fin=date_fin, tri=tri)
 
     def additionner(self, a, b):
+        a, b = normaliser_nombre(a), normaliser_nombre(b)
         resultat = a + b
         self._ajouter_historique(a, "+", b, resultat)
         return resultat
 
     def soustraire(self, a, b):
+        a, b = normaliser_nombre(a), normaliser_nombre(b)
         resultat = a - b
         self._ajouter_historique(a, "-", b, resultat)
         return resultat
 
     def multiplier(self, a, b):
+        a, b = normaliser_nombre(a), normaliser_nombre(b)
         resultat = a * b
         self._ajouter_historique(a, "*", b, resultat)
         return resultat
     
     def diviser(self, a, b):
+        a, b = normaliser_nombre(a), normaliser_nombre(b)
         if b == 0:
             raise ValueError("Division par zéro non autorisée.")
 
