@@ -110,14 +110,19 @@ def calcul():
 @app.route("/historique")
 def historique():
     try:
-        operations = calculatrice.obtenir_historique()
+        pagination = calculatrice.obtenir_historique_pagine(
+            request.args.get("page", "1"), request.args.get("recherche", ""),
+            request.args.get("operation", ""))
+    except ValueError:
+        return "Filtre d'opération non valide.", 400
     except sqlite3.Error:
         app.logger.exception("Erreur SQLite lors de la lecture de l'historique.")
         return "Impossible de charger l'historique. Réessayez dans quelques instants.", 500
 
     return render_template(
         "historique.html",
-        historique=operations
+        historique=pagination["calculs"],
+        pagination=pagination
     )
 
 
@@ -133,6 +138,10 @@ def supprimer_operation(calcul_id):
     if not supprime:
         return "Calcul introuvable : aucune opération ne correspond à cet identifiant.", 404
 
+    if any(champ in request.form for champ in ("page", "recherche", "operation")):
+        return redirect(url_for("historique", page=request.form.get("page", "1"),
+                                recherche=request.form.get("recherche", ""),
+                                operation=request.form.get("operation", "")))
     return redirect(url_for("historique"))
 
 

@@ -3,7 +3,8 @@ from math import isfinite
 from database import (
     initialiser_base,
     enregistrer_calcul,
-    lire_historique
+    lire_historique,
+    lire_historique_pagine
 )
 
 class Calculatrice:
@@ -22,6 +23,9 @@ class Calculatrice:
 
     def obtenir_historique(self):
         return lire_historique()
+
+    def obtenir_historique_pagine(self, page=1, recherche="", operation=""):
+        return lire_historique_pagine(page, recherche=recherche, operation=operation)
 
     def additionner(self, a, b):
         resultat = a + b

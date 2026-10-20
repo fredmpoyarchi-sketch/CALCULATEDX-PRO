@@ -1153,6 +1153,7 @@ body {
 
 .history-filters {
     display: flex;
+    flex-wrap: wrap;
     gap: 15px;
     padding: 20px 30px;
     border-bottom: 1px solid var(--border);
@@ -1255,6 +1256,16 @@ body {
 .reset-filter-button:hover {
     background: #e0e7ff;
 }
+
+.history-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 24px;
+}
+.history-pagination [aria-disabled="true"] { color: var(--text-muted); }
 
 .statistics-indicators,
 .statistics-charts {
