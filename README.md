@@ -104,6 +104,24 @@ POST /api/v1/calculer
 - `200 OK` : le calcul a été effectué avec succès.
 - `400 Bad Request` : la requête contient une erreur, un champ obligatoire est absent, l'opération est invalide ou une division par zéro est demandée.
 
+## Contrat numérique
+
+Les calculs utilisent des flottants Python binary64 et SQLite REAL, sans
+arithmétique décimale exacte ni modification du schéma. Les opérandes et résultats
+doivent être finis. Les entiers JSON et les saisies HTML en notation entière
+(chiffres avec signe facultatif, sans point ni exposant) sont
+acceptés uniquement si leur conversion en float est exacte : `2**53 + 1` est
+refusé, mais `2**53 + 2`, `2**63` et `10**20` sont acceptés. Il n'existe pas de
+plafond général à `2**53` pour les flottants.
+
+Les saisies avec point ou exposant, les fractions et opérations suivent les arrondis binary64, y compris le sous-flux
+vers zéro ; une exactitude décimale n'est pas garantie. Un nombre JSON déjà décodé
+comme float est évalué selon cette valeur, sans reconstitution de son texte initial.
+La cohérence signifie l'égalité numérique entre le résultat float de l'API et
+celui relu depuis SQLite, pas l'identité textuelle ni la distinction entre +0 et -0.
+Les erreurs numériques donnent HTTP 400 (JSON pour l'API, page d'erreur de calcul
+pour le formulaire), sans enregistrement. Les erreurs SQLite restent HTTP 500.
+
 ## Structure du projet
 
 ```text

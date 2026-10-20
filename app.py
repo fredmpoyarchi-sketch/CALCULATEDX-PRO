@@ -3,7 +3,7 @@ import secrets
 import sqlite3
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-from models import Calculatrice
+from models import Calculatrice, normaliser_nombre
 from database import obtenir_statistiques, supprimer_calcul
 
 app = Flask(__name__)
@@ -67,10 +67,10 @@ def calcul():
                 if not valeur:
                     raise ValueError(f"Veuillez saisir le {libelle}.")
                 try:
-                    nombre = float(valeur)
+                    nombre = normaliser_nombre(valeur)
                 except ValueError:
                     raise ValueError(
-                        f"Le {libelle} doit être une valeur numérique valide."
+                        f"Le {libelle} doit être un nombre fini et représentable (sans perte pour les entiers)."
                     ) from None
                 if not isfinite(nombre):
                     raise ValueError(f"Le {libelle} doit être un nombre fini.")
@@ -180,12 +180,10 @@ def api_calculer():
                 "erreur": f"Le champ {champ} doit être un nombre JSON, sans booléen."
             }), 400
         try:
-            fini = isfinite(nombre)
-        except OverflowError:
-            fini = False
-        if not fini:
+            donnees[champ] = normaliser_nombre(nombre)
+        except ValueError as erreur:
             return jsonify({
-                "erreur": f"Le champ {champ} doit être un nombre fini représentable."
+                "erreur": f"Le champ {champ} est invalide : {erreur}"
             }), 400
 
     nombre1 = donnees["nombre1"]
