@@ -112,9 +112,10 @@ def historique():
     try:
         pagination = calculatrice.obtenir_historique_pagine(
             request.args.get("page", "1"), request.args.get("recherche", ""),
-            request.args.get("operation", ""))
+            request.args.get("operation", ""), request.args.get("date_debut", ""),
+            request.args.get("date_fin", ""), request.args.get("tri", "recent"))
     except ValueError:
-        return "Filtre d'opération non valide.", 400
+        return "Filtres non valides : vérifiez l'opération, le tri et les dates YYYY-MM-DD (début ≤ fin).", 400
     except sqlite3.Error:
         app.logger.exception("Erreur SQLite lors de la lecture de l'historique.")
         return "Impossible de charger l'historique. Réessayez dans quelques instants.", 500
@@ -138,10 +139,13 @@ def supprimer_operation(calcul_id):
     if not supprime:
         return "Calcul introuvable : aucune opération ne correspond à cet identifiant.", 404
 
-    if any(champ in request.form for champ in ("page", "recherche", "operation")):
+    if any(champ in request.form for champ in ("page", "recherche", "operation", "date_debut", "date_fin", "tri")):
         return redirect(url_for("historique", page=request.form.get("page", "1"),
                                 recherche=request.form.get("recherche", ""),
-                                operation=request.form.get("operation", "")))
+                                operation=request.form.get("operation", ""),
+                                date_debut=request.form.get("date_debut", ""),
+                                date_fin=request.form.get("date_fin", ""),
+                                tri=request.form.get("tri", "recent")))
     return redirect(url_for("historique"))
 
 

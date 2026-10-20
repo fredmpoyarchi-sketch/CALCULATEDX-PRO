@@ -1174,6 +1174,9 @@ body {
     min-width: 0;
 }
 
+.history-filters label { display: grid; gap: 6px; min-width: 0; font-size: 14px; color: var(--text-muted); }
+.history-filters label input { width: 100%; min-width: 0; }
+
 .history-filters select {
     min-width: 200px;
 }
