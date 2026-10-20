@@ -50,6 +50,12 @@ Historique - CALCULATEDX PRO
                     <option value="{{ symbole }}"{% if pagination.operation == symbole %} selected{% endif %}>{{ nom }}</option>
                     {% endfor %}
                 </select>
+                <label>Du (UTC)<input type="date" name="date_debut" value="{{ pagination.date_debut }}"></label>
+                <label>Au (UTC, inclus)<input type="date" name="date_fin" value="{{ pagination.date_fin }}"></label>
+                <select name="tri" aria-label="Ordre chronologique">
+                    <option value="recent"{% if pagination.tri == 'recent' %} selected{% endif %}>Plus récents</option>
+                    <option value="ancien"{% if pagination.tri == 'ancien' %} selected{% endif %}>Plus anciens</option>
+                </select>
                 <button class="btn btn-primary" type="submit">Rechercher</button>
                 <a class="btn btn-secondary" href="{{ url_for('historique') }}">Réinitialiser</a>
             </form>
@@ -115,6 +121,9 @@ Historique - CALCULATEDX PRO
                 onsubmit="return confirm('Voulez-vous vraiment supprimer ce calcul ?');"
             >
                 <input type="hidden" name="page" value="{{ pagination.page }}">
+                <input type="hidden" name="date_debut" value="{{ pagination.date_debut }}">
+                <input type="hidden" name="date_fin" value="{{ pagination.date_fin }}">
+                <input type="hidden" name="tri" value="{{ pagination.tri }}">
                 <input type="hidden" name="recherche" value="{{ pagination.recherche }}">
                 <input type="hidden" name="operation" value="{{ pagination.operation }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -140,7 +149,7 @@ Historique - CALCULATEDX PRO
                     ↺
                 </div>
 
-                <h3>{{ "Aucun résultat trouvé" if pagination.recherche or pagination.operation else "Aucun calcul enregistré" }}</h3>
+                <h3>{{ "Aucun résultat trouvé" if pagination.recherche or pagination.operation or pagination.date_debut or pagination.date_fin else "Aucun calcul enregistré" }}</h3>
 
                 <p>
                     Modifiez vos critères ou effectuez un nouveau calcul.
@@ -159,11 +168,11 @@ Historique - CALCULATEDX PRO
 
         <nav class="history-pagination" aria-label="Pagination de l'historique">
             {% if pagination.page > 1 %}
-            <a class="btn btn-secondary" rel="prev" href="{{ url_for('historique', page=pagination.page - 1, recherche=pagination.recherche, operation=pagination.operation) }}">Précédent</a>
+            <a class="btn btn-secondary" rel="prev" href="{{ url_for('historique', page=pagination.page - 1, recherche=pagination.recherche, operation=pagination.operation, date_debut=pagination.date_debut, date_fin=pagination.date_fin, tri=pagination.tri) }}">Précédent</a>
             {% else %}<span aria-disabled="true">Précédent</span>{% endif %}
             <span aria-current="page">Page {{ pagination.page }} sur {{ pagination.pages }}</span>
             {% if pagination.page < pagination.pages %}
-            <a class="btn btn-secondary" rel="next" href="{{ url_for('historique', page=pagination.page + 1, recherche=pagination.recherche, operation=pagination.operation) }}">Suivant</a>
+            <a class="btn btn-secondary" rel="next" href="{{ url_for('historique', page=pagination.page + 1, recherche=pagination.recherche, operation=pagination.operation, date_debut=pagination.date_debut, date_fin=pagination.date_fin, tri=pagination.tri) }}">Suivant</a>
             {% else %}<span aria-disabled="true">Suivant</span>{% endif %}
         </nav>
     </div>

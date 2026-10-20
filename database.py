@@ -2,6 +2,7 @@ import sqlite3
 from math import isfinite
 from contextlib import closing
 from pathlib import Path
+from datetime import date
 
 # Emplacement de la base de données
 DB_PATH = Path(__file__).resolve().parent / "calculatedx.db"
@@ -68,8 +69,9 @@ def lire_historique():
     return [dict(ligne) for ligne in lignes]
 
 
-def lire_historique_pagine(page=1, taille=20, recherche="", operation="") -> dict:
-    """Retourne une page bornée ; les identifiants décroissants fixent l'ordre d'insertion."""
+def lire_historique_pagine(page=1, taille=20, recherche="", operation="",
+                          date_debut="", date_fin="", tri="recent") -> dict:
+    """Retourne une page filtrée, avec journées SQLite UTC et tri chronologique stable."""
     if not isinstance(taille, int) or isinstance(taille, bool) or taille < 1:
         raise ValueError("La taille de page doit être un entier positif.")
     try:
@@ -78,8 +80,28 @@ def lire_historique_pagine(page=1, taille=20, recherche="", operation="") -> dic
         page = 1
     if operation not in ("", "+", "-", "*", "/"):
         raise ValueError("Filtre d'opération non valide.")
+    ordres = {"recent": "julianday(date_creation) DESC, id DESC",
+              "ancien": "julianday(date_creation) ASC, id ASC"}
+    if tri not in ordres:
+        raise ValueError("Tri non valide.")
+    for valeur in (date_debut, date_fin):
+        if valeur:
+            try:
+                valide = date.fromisoformat(valeur).isoformat() == valeur
+            except (ValueError, TypeError):
+                valide = False
+            if not valide:
+                raise ValueError("Date non valide : utilisez YYYY-MM-DD.")
+    if date_debut and date_fin and date_debut > date_fin:
+        raise ValueError("La date de début doit précéder la date de fin.")
     recherche = recherche.strip()
     criteres, parametres = [], []
+    if date_debut:
+        criteres.append("DATE(date_creation) >= ?")
+        parametres.append(date_debut)
+    if date_fin:
+        criteres.append("DATE(date_creation) <= ?")
+        parametres.append(date_fin)
     if recherche:
         # Recherche littérale : %, _ et les guillemets ne sont pas des jokers SQL.
         colonnes = ("nombre1", "nombre2", "resultat")
@@ -105,12 +127,13 @@ def lire_historique_pagine(page=1, taille=20, recherche="", operation="") -> dic
             page = min(page, pages)
             lignes = connexion.execute(
                 """SELECT id, nombre1, operation, nombre2, resultat, date_creation
-                FROM calculs""" + clause + " ORDER BY id DESC LIMIT ? OFFSET ?",
+                FROM calculs""" + clause + " ORDER BY " + ordres[tri] + " LIMIT ? OFFSET ?",
                 [*parametres, taille, (page - 1) * taille],
             ).fetchall()
     return {"calculs": [dict(ligne) for ligne in lignes], "total": total,
             "page": page, "pages": pages, "taille": taille,
-            "recherche": recherche, "operation": operation}
+            "recherche": recherche, "operation": operation,
+            "date_debut": date_debut, "date_fin": date_fin, "tri": tri}
 
 
 def obtenir_statistiques() -> dict:

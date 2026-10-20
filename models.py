@@ -24,8 +24,10 @@ class Calculatrice:
     def obtenir_historique(self):
         return lire_historique()
 
-    def obtenir_historique_pagine(self, page=1, recherche="", operation=""):
-        return lire_historique_pagine(page, recherche=recherche, operation=operation)
+    def obtenir_historique_pagine(self, page=1, recherche="", operation="",
+                                  date_debut="", date_fin="", tri="recent"):
+        return lire_historique_pagine(page, recherche=recherche, operation=operation,
+                                     date_debut=date_debut, date_fin=date_fin, tri=tri)
 
     def additionner(self, a, b):
         resultat = a + b
