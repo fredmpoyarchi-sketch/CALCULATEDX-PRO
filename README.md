@@ -48,6 +48,13 @@ pip install -r requirements.txt
 ```
 ## Lancer l'application
 
+Définissez la variable d'environnement `CALCULATEDX_SECRET_KEY` avant le
+lancement. Utilisez une clé aléatoire générée une seule fois avec
+`secrets.token_hex(32)` et conservez-la dans votre configuration d'environnement
+pour les lancements suivants. Ne la versionnez pas. L'application refuse de
+démarrer si cette variable est absente ou vide. Flask ne charge pas
+automatiquement un fichier `.env` dans ce projet.
+
 Après avoir activé l'environnement virtuel, lancer le serveur Flask :
 
 ```bash
@@ -63,6 +70,12 @@ L'application est ensuite accessible dans le navigateur à l'adresse :
 CALCULATEDX WEB expose une API permettant d'effectuer des calculs à partir de données JSON.
 
 ### Endpoint
+
+Toutes les requêtes de modification exigent un jeton CSRF associé à une session.
+Pour utiliser l'API, chargez d'abord `GET /calcul`, récupérez la valeur du champ
+caché `csrf_token`, puis envoyez-la dans l'en-tête `X-CSRF-Token` du POST en
+conservant le cookie de session reçu. Un jeton absent ou invalide entraîne une
+réponse JSON HTTP 400 sans enregistrement du calcul.
 
 ```text
 POST /api/v1/calculer

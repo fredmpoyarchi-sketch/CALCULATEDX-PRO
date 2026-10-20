@@ -12,3 +12,29 @@ __pycache__/
 .vscode/
 
 *.db
+
+# Variantes locales des variables d'environnement
+.env.*
+
+# Bases SQLite et fichiers auxiliaires
+*.sqlite
+*.sqlite3
+*-wal
+*-shm
+*-journal
+
+# Cles privees et identifiants sensibles
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+credentials.json
+credentials.*.json
+client_secret*.json
+service-account*.json
+service_account*.json
+.aws/credentials

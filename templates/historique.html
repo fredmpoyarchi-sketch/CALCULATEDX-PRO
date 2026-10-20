@@ -141,6 +141,7 @@ Historique - CALCULATEDX PRO
                 method="POST"
                 onsubmit="return confirm('Voulez-vous vraiment supprimer ce calcul ?');"
             >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button type="submit" class="delete-button">
                     Supprimer
                 </button>

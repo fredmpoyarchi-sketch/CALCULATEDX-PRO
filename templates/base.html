@@ -47,6 +47,10 @@
                     Historique
                 </a>
 
+                <a href="{{ url_for('statistiques') }}"{% if request.endpoint == 'statistiques' %} aria-current="page"{% endif %}>
+                    Statistiques
+                </a>
+
             </nav>
 
         </div>
