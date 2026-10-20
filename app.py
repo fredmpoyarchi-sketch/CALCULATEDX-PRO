@@ -96,6 +96,10 @@ def calcul():
 
         except ValueError as e:
             erreur = str(e)
+        except sqlite3.Error:
+            app.logger.exception("Erreur SQLite lors de l'enregistrement d'un calcul.")
+            return render_template("calcul.html", resultat=None,
+                                   erreur="Impossible d'enregistrer le calcul. Réessayez plus tard."), 500
 
     return render_template(
         "calcul.html",
@@ -198,6 +202,9 @@ def api_calculer():
         return jsonify({
             "erreur": str(e)
         }), 400
+    except sqlite3.Error:
+        app.logger.exception("Erreur SQLite lors de l'enregistrement d'un calcul via l'API.")
+        return jsonify({"erreur": "Impossible d'enregistrer le calcul. Réessayez plus tard."}), 500
 
     return jsonify({
         "resultat": resultat

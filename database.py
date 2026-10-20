@@ -16,9 +16,10 @@ def obtenir_connexion():
 def initialiser_base():
     """Crée la table des calculs si elle n'existe pas."""
 
-    with obtenir_connexion() as connexion:
-
-        connexion.execute("""
+    with closing(obtenir_connexion()) as connexion:
+        with connexion:
+            connexion.execute("BEGIN")
+            connexion.execute("""
             CREATE TABLE IF NOT EXISTS calculs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre1 REAL NOT NULL,
@@ -27,23 +28,22 @@ def initialiser_base():
                 resultat REAL NOT NULL,
                 date_creation TEXT DEFAULT CURRENT_TIMESTAMP
             )
-        """)
-
-        connexion.commit()
+            """)
 
 
 def enregistrer_calcul(nombre1, operation, nombre2, resultat):
     """Enregistre une opération dans SQLite."""
 
-    with obtenir_connexion() as connexion:
-        connexion.execute(
-            """
-            INSERT INTO calculs
-            (nombre1, operation, nombre2, resultat)
-            VALUES (?, ?, ?, ?)
-            """,
-            (nombre1, operation, nombre2, resultat)
-        )
+    with closing(obtenir_connexion()) as connexion:
+        with connexion:
+            connexion.execute(
+                """
+                INSERT INTO calculs
+                (nombre1, operation, nombre2, resultat)
+                VALUES (?, ?, ?, ?)
+                """,
+                (nombre1, operation, nombre2, resultat)
+            )
 
 
 def lire_historique():
