@@ -74,7 +74,7 @@ class SecurityRegressions(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     self.module.calculatrice.additionner(value, 0)
                 self.assertEqual(database.lire_historique(), [])
-                self.assertEqual(self.module.calculatrice._historique, [])
+                self.assertEqual(self.module.calculatrice.obtenir_historique(), [])
 
     def test_nonfinite_form_result(self):
         response = self.client.post("/calcul", data=dict(

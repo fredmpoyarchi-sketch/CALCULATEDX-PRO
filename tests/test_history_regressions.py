@@ -23,6 +23,32 @@ class HistoryRegressions(unittest.TestCase):
     def test_read_empty(self):
         self.assertEqual(database.lire_historique(), [])
 
+    def test_calculation_is_visible_from_existing_and_new_instances(self):
+        calculator = Calculatrice()
+        observer = Calculatrice()
+        self.assertEqual(calculator.additionner(2, 3), 5)
+        rows = calculator.obtenir_historique()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["resultat"], 5)
+        self.assertEqual(observer.obtenir_historique(), rows)
+        self.assertEqual(Calculatrice().obtenir_historique(), rows)
+
+    def test_deleted_calculation_never_reappears(self):
+        calculator = Calculatrice()
+        calculator.additionner(2, 3)
+        identifier = calculator.obtenir_historique()[0]["id"]
+        response = self.client.post(f"/historique/supprimer/{identifier}",
+                                    headers=self.csrf_headers())
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(calculator.obtenir_historique(), [])
+        self.assertEqual(Calculatrice().obtenir_historique(), [])
+        calculator.multiplier(4, 5)
+        rows = calculator.obtenir_historique()
+        self.assertEqual(len(rows), 1)
+        self.assertNotEqual(rows[0]["id"], identifier)
+        self.assertEqual(rows[0]["resultat"], 20)
+        self.assertEqual(database.obtenir_statistiques()["total"], 1)
+
     def test_read_order_and_values(self):
         first = self.create_calculation()
         database.enregistrer_calcul(8, "-", 2, 6)
