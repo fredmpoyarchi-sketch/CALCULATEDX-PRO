@@ -46,6 +46,9 @@ class Settings:
 def validate_database(path):
     """Contrôle en lecture seule ; aucune création ni migration implicite."""
     with closing(sqlite3.connect(path.as_uri() + "?mode=ro", uri=True)) as connection:
+        from database import SCHEMA_VERSION
+        if connection.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
+            raise ValueError("Migration préalable requise avant démarrage des workers.")
         columns = {row[1] for row in connection.execute("PRAGMA table_info(calculs)")}
         indexes = {row[1] for row in connection.execute("PRAGMA index_list(calculs)")}
         if not {"id", "nombre1", "operation", "nombre2", "resultat",
@@ -99,7 +102,8 @@ def create_application(settings):
     validate_database(settings.database_path)
     import database
     database.DB_PATH = settings.database_path
-    # L'initialisation existante est idempotente sur le schéma déjà vérifié.
+    database.INITIALISER_AU_DEMARRAGE = False
+    # Aucun CREATE/ALTER pendant l'import du worker : migration préalable obligatoire.
     application = importlib.import_module("app").app
     application.config.update(DEBUG=False, TESTING=False, TRUSTED_HOSTS=list(settings.hostnames))
     return AccessLog(application)

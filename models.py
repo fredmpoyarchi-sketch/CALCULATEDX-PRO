@@ -32,8 +32,9 @@ def normaliser_nombre(valeur):
 
 class Calculatrice:
 
-    def __init__(self):
-        initialiser_base()
+    def __init__(self, *, initialiser=True):
+        if initialiser:
+            initialiser_base()
 
 
     def _ajouter_historique(self, a, operateur, b, resultat, visitor_id):

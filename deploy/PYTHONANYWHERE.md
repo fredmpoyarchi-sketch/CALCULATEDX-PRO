@@ -1,5 +1,8 @@
 # PythonAnywhere Free — préparation du lot 2
 
+Pour le lot 3, suivre [la stratégie des données](DATA_RELIABILITY.md) : choix de
+stockage, préparation versionnée avant workers, sauvegarde et restauration.
+
 Aucun compte créé, site rechargé ou fichier envoyé par cette préparation. Les
 étapes ci-dessous sont manuelles et ne doivent être exécutées qu'après décision
 de déployer. Les exemples `YOUR_USERNAME` sont à remplacer hors du dépôt.
@@ -115,7 +118,8 @@ Ne jamais afficher/copier ce JSON dans une issue, un log ou un commit. Ne pas
 recréer la clé après chaque modification. Le chemin SQLite local de `database.py`
 reste compatible avec le développement ; ce profil remplace `database.DB_PATH`
 avant l'import de l'application. La validation préliminaire ouvre la base en
-lecture seule ; l'initialisation existante reste idempotente sur le schéma préparé.
+lecture seule ; la version de schéma doit être préparée avant les workers, qui
+n'effectuent plus de migration pendant leur démarrage.
 
 ## Configuration de l'onglet Web
 

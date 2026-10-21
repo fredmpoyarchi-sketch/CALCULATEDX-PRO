@@ -87,6 +87,9 @@ de production sur la cible retenue **PythonAnywhere Free**, consulter
 [le guide PythonAnywhere](deploy/PYTHONANYWHERE.md).
 Le [profil WSGI autonome](deploy/README.md) reste une alternative ; ses modèles
 Nginx/systemd et son lancement Waitress ne s'appliquent pas à PythonAnywhere.
+La [stratégie de fiabilité des données](deploy/DATA_RELIABILITY.md) compare les
+stockages et décrit préparation, sauvegardes, restauration et limites des
+historiques anonymes. Le choix d'un stockage fiable reste préalable à la publication.
 
 CALCULATEDX WEB expose une API permettant d'effectuer des calculs à partir de données JSON.
 

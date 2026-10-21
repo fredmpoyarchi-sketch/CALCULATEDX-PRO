@@ -4,7 +4,7 @@ import sqlite3
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, abort
 from models import Calculatrice, normaliser_nombre
-from database import obtenir_statistiques, supprimer_calcul
+from database import obtenir_statistiques, supprimer_calcul, INITIALISER_AU_DEMARRAGE
 
 app = Flask(__name__)
 app.config.update(
@@ -21,7 +21,7 @@ if not app.secret_key or not app.secret_key.strip():
         "Démarrage impossible : définissez CALCULATEDX_SECRET_KEY avec une clé "
         "secrète aléatoire persistante dans l'environnement."
     )
-calculatrice = Calculatrice()
+calculatrice = Calculatrice(initialiser=INITIALISER_AU_DEMARRAGE)
 
 @app.before_request
 def limiter_corps_requete():

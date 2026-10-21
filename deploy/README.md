@@ -65,9 +65,9 @@ développement Flask. `app.run`, `flask run` et `--debug` sont exclus du lanceme
 public. Le processus vérifie l'environnement et le schéma en lecture seule avant
 d'importer l'application. Il refuse une base manquante, ancienne, située dans le
 dépôt ou dépourvue de l'index visiteur. Il n'effectue aucune nouvelle migration.
-L'import Flask conserve son initialisation existante, idempotente sur cette base
-préparée. Préparer une nouvelle base ou une copie par une procédure séparée et
-autorisée ; ce lot ne copie, ne migre et ne purge aucune donnée.
+Le lot 3 exige désormais une préparation versionnée avant les workers : aucun DDL
+à leur démarrage. Consulter [la procédure des données](DATA_RELIABILITY.md) pour
+préparer une copie et tester sauvegarde/restauration, sans écraser les originaux.
 
 Le compte de service doit pouvoir écrire dans le répertoire de la base et ses
 fichiers SQLite auxiliaires, mais pas dans le code. Restreindre les ACL au compte
