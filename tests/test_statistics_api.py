@@ -33,6 +33,9 @@ class StatisticsApiTests(unittest.TestCase):
         config_patch.start()
         self.addCleanup(config_patch.stop)
         self.client = self.module.app.test_client()
+        with self.client.session_transaction() as session:
+            session["visitor_id"] = "a" * 64
+        self.visitor_id = "a" * 64
 
     def test_empty_database(self):
         response = self.client.get("/api/v1/statistiques")
@@ -44,8 +47,8 @@ class StatisticsApiTests(unittest.TestCase):
         with database.obtenir_connexion() as connexion:
             connexion.executemany(
                 """INSERT INTO calculs
-                (nombre1, operation, nombre2, resultat, date_creation)
-                VALUES (2, ?, 1, 3, ?)""",
+                (nombre1, operation, nombre2, resultat, date_creation, visitor_id)
+                VALUES (2, ?, 1, 3, ?, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')""",
                 [("+", "2026-10-20 10:00:00"), ("-", "2026-10-19 12:00:00"),
                  ("+", "2026-10-20 18:00:00")])
         response = self.client.get("/api/v1/statistiques")

@@ -12,8 +12,9 @@ class HistoryRegressions(unittest.TestCase):
     setUp = test_statistics_api.StatisticsApiTests.setUp
 
     def create_calculation(self):
-        database.enregistrer_calcul(2, "+", 3, 5)
-        return database.lire_historique()[0]["id"]
+        database.enregistrer_calcul(
+            2, "+", 3, 5, visitor_id=self.visitor_id)
+        return database.lire_historique(self.visitor_id)[0]["id"]
 
     def csrf_headers(self):
         self.client.get("/calcul")
@@ -21,38 +22,39 @@ class HistoryRegressions(unittest.TestCase):
             return {"X-CSRF-Token": session["csrf_token"]}
 
     def test_read_empty(self):
-        self.assertEqual(database.lire_historique(), [])
+        self.assertEqual(database.lire_historique(self.visitor_id), [])
 
     def test_calculation_is_visible_from_existing_and_new_instances(self):
         calculator = Calculatrice()
         observer = Calculatrice()
-        self.assertEqual(calculator.additionner(2, 3), 5)
-        rows = calculator.obtenir_historique()
+        self.assertEqual(calculator.additionner(2, 3, self.visitor_id), 5)
+        rows = calculator.obtenir_historique(self.visitor_id)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["resultat"], 5)
-        self.assertEqual(observer.obtenir_historique(), rows)
-        self.assertEqual(Calculatrice().obtenir_historique(), rows)
+        self.assertEqual(observer.obtenir_historique(self.visitor_id), rows)
+        self.assertEqual(Calculatrice().obtenir_historique(self.visitor_id), rows)
 
     def test_deleted_calculation_never_reappears(self):
         calculator = Calculatrice()
-        calculator.additionner(2, 3)
-        identifier = calculator.obtenir_historique()[0]["id"]
+        calculator.additionner(
+            2, 3, visitor_id=self.visitor_id)
+        identifier = calculator.obtenir_historique(self.visitor_id)[0]["id"]
         response = self.client.post(f"/historique/supprimer/{identifier}",
                                     headers=self.csrf_headers())
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(calculator.obtenir_historique(), [])
-        self.assertEqual(Calculatrice().obtenir_historique(), [])
-        calculator.multiplier(4, 5)
-        rows = calculator.obtenir_historique()
+        self.assertEqual(calculator.obtenir_historique(self.visitor_id), [])
+        self.assertEqual(Calculatrice().obtenir_historique(self.visitor_id), [])
+        calculator.multiplier(4, 5, visitor_id=self.visitor_id)
+        rows = calculator.obtenir_historique(self.visitor_id)
         self.assertEqual(len(rows), 1)
         self.assertNotEqual(rows[0]["id"], identifier)
         self.assertEqual(rows[0]["resultat"], 20)
-        self.assertEqual(database.obtenir_statistiques()["total"], 1)
+        self.assertEqual(database.obtenir_statistiques(self.visitor_id)["total"], 1)
 
     def test_read_order_and_values(self):
         first = self.create_calculation()
-        database.enregistrer_calcul(8, "-", 2, 6)
-        rows = Calculatrice().obtenir_historique()
+        database.enregistrer_calcul(8, "-", 2, 6, visitor_id=self.visitor_id)
+        rows = Calculatrice().obtenir_historique(self.visitor_id)
         self.assertEqual(len(rows), 2)
         self.assertGreater(rows[0]["id"], first)
         self.assertEqual(rows[0]["operation"], "-")
@@ -71,14 +73,14 @@ class HistoryRegressions(unittest.TestCase):
                                     headers=self.csrf_headers())
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.headers["Location"].endswith("/historique"))
-        self.assertEqual(database.lire_historique(), [])
+        self.assertEqual(database.lire_historique(self.visitor_id), [])
 
     def test_delete_missing(self):
         identifier = self.create_calculation()
         response = self.client.post(f"/historique/supprimer/{identifier + 1}",
                                     headers=self.csrf_headers())
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(len(database.lire_historique()), 1)
+        self.assertEqual(len(database.lire_historique(self.visitor_id)), 1)
 
     def test_delete_requires_csrf(self):
         identifier = self.create_calculation()
@@ -87,16 +89,16 @@ class HistoryRegressions(unittest.TestCase):
             with self.subTest(headers=supplied):
                 response = self.client.post(f"/historique/supprimer/{identifier}", headers=supplied)
                 self.assertEqual(response.status_code, 400)
-                self.assertEqual(len(database.lire_historique()), 1)
+                self.assertEqual(len(database.lire_historique(self.visitor_id)), 1)
         self.assertTrue(headers["X-CSRF-Token"])
 
     def test_get_cannot_delete(self):
         identifier = self.create_calculation()
         self.assertEqual(self.client.get(f"/historique/supprimer/{identifier}").status_code, 405)
-        self.assertEqual(len(database.lire_historique()), 1)
+        self.assertEqual(len(database.lire_historique(self.visitor_id)), 1)
 
     def test_connections_closed_after_read_and_delete(self):
-        for operation in (database.lire_historique, lambda: database.supprimer_calcul(999)):
+        for operation in (lambda: database.lire_historique(self.visitor_id), lambda: database.supprimer_calcul(999, self.visitor_id)):
             with self.subTest(operation=operation):
                 connexion = database.obtenir_connexion()
                 with patch.object(database, "obtenir_connexion", return_value=connexion):
@@ -105,7 +107,7 @@ class HistoryRegressions(unittest.TestCase):
                     connexion.execute("SELECT 1")
 
     def test_connections_closed_after_sqlite_error(self):
-        for operation in (database.lire_historique, lambda: database.supprimer_calcul(999)):
+        for operation in (lambda: database.lire_historique(self.visitor_id), lambda: database.supprimer_calcul(999, self.visitor_id)):
             with self.subTest(operation=operation):
                 connexion = sqlite3.connect(":memory:")
                 self.connections.append(connexion)
@@ -130,7 +132,7 @@ class HistoryRegressions(unittest.TestCase):
             response = self.client.post(f"/historique/supprimer/{identifier}", headers=headers)
         self.assertEqual(response.status_code, 500)
         self.assertNotIn("private-database-path", response.get_data(as_text=True))
-        self.assertEqual(len(database.lire_historique()), 1)
+        self.assertEqual(len(database.lire_historique(self.visitor_id)), 1)
 
 
 if __name__ == "__main__":

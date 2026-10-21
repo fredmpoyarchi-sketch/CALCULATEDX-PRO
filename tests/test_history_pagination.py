@@ -11,8 +11,8 @@ class HistoryPaginationTests(unittest.TestCase):
     def insert_rows(self, count):
         with database.obtenir_connexion() as connection:
             connection.executemany("""INSERT INTO calculs
-                (nombre1, operation, nombre2, resultat, date_creation)
-                VALUES (?, '+', 1, ?, '2026-10-20 12:00:00')""",
+                (nombre1, operation, nombre2, resultat, date_creation, visitor_id)
+                VALUES (?, '+', 1, ?, '2026-10-20 12:00:00', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')""",
                 [(value, value + 1) for value in range(count)])
 
     def test_boundary_counts(self):
@@ -21,7 +21,7 @@ class HistoryPaginationTests(unittest.TestCase):
                 with database.obtenir_connexion() as connection:
                     connection.execute('DELETE FROM calculs')
                 self.insert_rows(count)
-                result = database.lire_historique_pagine()
+                result = database.lire_historique_pagine(self.visitor_id)
                 self.assertEqual(result['total'], count)
                 self.assertEqual(len(result['calculs']), min(count, 20))
                 self.assertEqual(result['pages'], max(1, (count + 19) // 20))
@@ -34,7 +34,7 @@ class HistoryPaginationTests(unittest.TestCase):
 
     def test_order_and_disjoint_pages(self):
         self.insert_rows(65)
-        pages = [database.lire_historique_pagine(page) for page in range(1, 5)]
+        pages = [database.lire_historique_pagine(self.visitor_id, page) for page in range(1, 5)]
         self.assertEqual([len(page['calculs']) for page in pages], [20, 20, 20, 5])
         identifiers = [row['id'] for page in pages for row in page['calculs']]
         self.assertEqual(identifiers, sorted(set(identifiers), reverse=True))
@@ -67,7 +67,7 @@ class HistoryPaginationTests(unittest.TestCase):
 
     def test_last_page_after_deletion(self):
         self.insert_rows(21)
-        identifier = database.lire_historique_pagine(2)['calculs'][0]['id']
+        identifier = database.lire_historique_pagine(self.visitor_id, 2)['calculs'][0]['id']
         self.client.get('/calcul')
         with self.client.session_transaction() as session:
             token = session['csrf_token']

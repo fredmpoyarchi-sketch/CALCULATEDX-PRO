@@ -23,8 +23,8 @@ class StatisticsPageTests(unittest.TestCase):
         with database_connection(self) as connection:
             connection.executemany(
                 """INSERT INTO calculs
-                (nombre1, operation, nombre2, resultat, date_creation)
-                VALUES (2, ?, 1, 3, ?)""",
+                (nombre1, operation, nombre2, resultat, date_creation, visitor_id)
+                VALUES (2, ?, 1, 3, ?, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')""",
                 [("+", "2026-10-20"), ("-", "2026-10-19"), ("+", "2026-10-20")])
         response = self.client.get("/statistiques")
         self.assertEqual(response.status_code, 200)
@@ -39,7 +39,7 @@ class StatisticsPageTests(unittest.TestCase):
     def test_operation_is_escaped(self):
         with database_connection(self) as connection:
             connection.execute("""INSERT INTO calculs
-                (nombre1, operation, nombre2, resultat) VALUES (1, ?, 1, 2)""",
+                (nombre1, operation, nombre2, resultat, visitor_id) VALUES (1, ?, 1, 2, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')""",
                 ('<script>alert(1)</script>',))
         html = self.client.get('/statistiques').get_data(as_text=True)
         self.assertNotIn('<script>', html)

@@ -15,6 +15,19 @@ if not app.secret_key or not app.secret_key.strip():
     )
 calculatrice = Calculatrice()
 
+def obtenir_visitor_id():
+    """Retourne un identifiant anonyme propre à la session."""
+    visitor_id = session.get("visitor_id")
+
+    if not isinstance(visitor_id, str) or len(visitor_id) != 64:
+        visitor_id = secrets.token_hex(32)
+        session["visitor_id"] = visitor_id
+
+    return visitor_id
+
+@app.before_request
+def identifier_visiteur():
+    obtenir_visitor_id()
 
 @app.context_processor
 def fournir_jeton_csrf():
@@ -80,16 +93,17 @@ def calcul():
             operation = request.form.get("operation", "")
 
             if operation == "addition":
-                resultat = calculatrice.additionner(nombre1, nombre2)
+                resultat = calculatrice.additionner(
+                nombre1, nombre2, obtenir_visitor_id())
 
             elif operation == "soustraction":
-                resultat = calculatrice.soustraire(nombre1, nombre2)
+                resultat = calculatrice.soustraire(nombre1, nombre2, obtenir_visitor_id())
 
             elif operation == "multiplication":
-                resultat = calculatrice.multiplier(nombre1, nombre2)
+                resultat = calculatrice.multiplier(nombre1, nombre2, obtenir_visitor_id())
 
             elif operation == "division":
-                resultat = calculatrice.diviser(nombre1, nombre2)
+                resultat = calculatrice.diviser(nombre1, nombre2, obtenir_visitor_id())
 
             else:
                 raise ValueError("Opération non valide. Choisissez une opération proposée.")
@@ -111,6 +125,7 @@ def calcul():
 def historique():
     try:
         pagination = calculatrice.obtenir_historique_pagine(
+            obtenir_visitor_id(),
             request.args.get("page", "1"), request.args.get("recherche", ""),
             request.args.get("operation", ""), request.args.get("date_debut", ""),
             request.args.get("date_fin", ""), request.args.get("tri", "recent"))
@@ -131,7 +146,7 @@ def historique():
 def supprimer_operation(calcul_id):
 
     try:
-        supprime = supprimer_calcul(calcul_id)
+        supprime = supprimer_calcul(calcul_id, obtenir_visitor_id())
     except sqlite3.Error:
         app.logger.exception("Erreur SQLite lors de la suppression d'un calcul.")
         return "Impossible de supprimer ce calcul. Réessayez dans quelques instants.", 500
@@ -199,16 +214,17 @@ def api_calculer():
 
     try:
         if operation == "addition":
-            resultat = calculatrice.additionner(nombre1, nombre2)
+            resultat = calculatrice.additionner(
+                nombre1, nombre2, obtenir_visitor_id())
 
         elif operation == "soustraction":
-            resultat = calculatrice.soustraire(nombre1, nombre2)
+            resultat = calculatrice.soustraire(nombre1, nombre2, obtenir_visitor_id())
 
         elif operation == "multiplication":
-            resultat = calculatrice.multiplier(nombre1, nombre2)
+            resultat = calculatrice.multiplier(nombre1, nombre2, obtenir_visitor_id())
 
         elif operation == "division":
-            resultat = calculatrice.diviser(nombre1, nombre2)
+            resultat = calculatrice.diviser(nombre1, nombre2, obtenir_visitor_id())
     except ValueError as e:
         return jsonify({
             "erreur": str(e)
@@ -224,7 +240,7 @@ def api_calculer():
 @app.route("/statistiques", methods=["GET"])
 def statistiques():
     try:
-        donnees = obtenir_statistiques()
+        donnees = obtenir_statistiques(obtenir_visitor_id())
     except sqlite3.Error:
         app.logger.exception("Erreur SQLite lors de la lecture du tableau de bord.")
         return render_template("statistiques.html", statistiques=None), 500
@@ -237,7 +253,7 @@ def statistiques():
 @app.route("/api/v1/statistiques", methods=["GET"])
 def api_statistiques():
     try:
-        return jsonify(obtenir_statistiques()), 200
+        return jsonify(obtenir_statistiques(obtenir_visitor_id())), 200
     except sqlite3.Error:
         app.logger.exception("Erreur SQLite lors de la lecture des statistiques.")
         return jsonify({"erreur": "Impossible de récupérer les statistiques."}), 500

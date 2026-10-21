@@ -49,23 +49,24 @@ def initialiser_base():
                 ON calculs (visitor_id)
             """)
 
+def enregistrer_calcul(nombre1, operation, nombre2, resultat, visitor_id):
+    """Enregistre un calcul pour un visiteur anonyme."""
 
-def enregistrer_calcul(nombre1, operation, nombre2, resultat):
-    """Enregistre une opération dans SQLite."""
+    if not isinstance(visitor_id, str) or not visitor_id:
+        raise ValueError("Identifiant du visiteur obligatoire.")
 
     with closing(obtenir_connexion()) as connexion:
         with connexion:
             connexion.execute(
                 """
                 INSERT INTO calculs
-                (nombre1, operation, nombre2, resultat)
-                VALUES (?, ?, ?, ?)
+                (nombre1, operation, nombre2, resultat, visitor_id)
+                VALUES (?, ?, ?, ?, ?)
                 """,
-                (nombre1, operation, nombre2, resultat)
+                (nombre1, operation, nombre2, resultat, visitor_id)
             )
 
-
-def lire_historique():
+def lire_historique(visitor_id):
     """Récupère les calculs détaillés depuis SQLite."""
 
     with closing(obtenir_connexion()) as connexion:
@@ -79,14 +80,15 @@ def lire_historique():
                 resultat,
                 date_creation
             FROM calculs
+            WHERE visitor_id = ?
             ORDER BY id DESC
-            """
+            """, (visitor_id,)
         ).fetchall()
 
     return [dict(ligne) for ligne in lignes]
 
 
-def lire_historique_pagine(page=1, taille=20, recherche="", operation="",
+def lire_historique_pagine(visitor_id, page=1, taille=20, recherche="", operation="",
                           date_debut="", date_fin="", tri="recent") -> dict:
     """Retourne une page filtrée, avec journées SQLite UTC et tri chronologique stable."""
     if not isinstance(taille, int) or isinstance(taille, bool) or taille < 1:
@@ -112,7 +114,7 @@ def lire_historique_pagine(page=1, taille=20, recherche="", operation="",
     if date_debut and date_fin and date_debut > date_fin:
         raise ValueError("La date de début doit précéder la date de fin.")
     recherche = recherche.strip()
-    criteres, parametres = [], []
+    criteres, parametres = ["visitor_id = ?"], [visitor_id]
     if date_debut:
         criteres.append("DATE(date_creation) >= ?")
         parametres.append(date_debut)
@@ -153,28 +155,30 @@ def lire_historique_pagine(page=1, taille=20, recherche="", operation="",
             "date_debut": date_debut, "date_fin": date_fin, "tri": tri}
 
 
-def obtenir_statistiques() -> dict:
+def obtenir_statistiques(visitor_id) -> dict:
     """Agrège les calculs enregistrés ; les jours sont les dates SQLite (UTC)."""
     with closing(obtenir_connexion()) as connexion:
         # Un même instantané pour les trois agrégations, même en cas d'écriture concurrente.
         with connexion:
             connexion.execute("BEGIN")
-            total = connexion.execute("SELECT COUNT(*) FROM calculs").fetchone()[0]
+            total = connexion.execute("SELECT COUNT(*) FROM calculs WHERE visitor_id = ?", (visitor_id,)).fetchone()[0]
             par_operation = connexion.execute(
                 """
                 SELECT operation, COUNT(*) AS total
                 FROM calculs
+                WHERE visitor_id = ?
                 GROUP BY operation
                 ORDER BY operation
-                """
+                """, (visitor_id,)
             ).fetchall()
             par_jour = connexion.execute(
                 """
                 SELECT DATE(date_creation) AS jour, COUNT(*) AS total
                 FROM calculs
+                WHERE visitor_id = ?
                 GROUP BY DATE(date_creation)
                 ORDER BY jour
-                """
+                """, (visitor_id,)
             ).fetchall()
     return {
         "total": total,
@@ -183,7 +187,7 @@ def obtenir_statistiques() -> dict:
     }
 
 
-def supprimer_calcul(calcul_id):
+def supprimer_calcul(calcul_id, visitor_id):
     """Supprime un calcul à partir de son identifiant."""
 
     with closing(obtenir_connexion()) as connexion:
@@ -191,9 +195,9 @@ def supprimer_calcul(calcul_id):
             curseur = connexion.execute(
                 """
                 DELETE FROM calculs
-                WHERE id = ?
+                WHERE id = ? AND visitor_id = ?
                 """,
-                (calcul_id,)
+                (calcul_id, visitor_id)
             )
             supprime = curseur.rowcount > 0
         return supprime

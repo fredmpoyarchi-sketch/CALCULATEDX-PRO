@@ -12,7 +12,7 @@ class HistoryFilterTests(unittest.TestCase):
     def populate(self):
         with database.obtenir_connexion() as connection:
             connection.executemany('''INSERT INTO calculs
-                (nombre1, operation, nombre2, resultat) VALUES (?, ?, ?, ?)''',
+                (nombre1, operation, nombre2, resultat, visitor_id) VALUES (?, ?, ?, ?, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')''',
                 [(123.5, '+', 2, 125.5)] * 25 + [(123.5, '-', 2, 121.5)] * 21
                 + [(7, '*', 8, 56)])
 
@@ -22,11 +22,11 @@ class HistoryFilterTests(unittest.TestCase):
                                           ('123.50', '+', 25), ('', '-', 21),
                                           ('56', '*', 1), ('8', '*', 1)]:
             with self.subTest(search=search, operation=operation):
-                first = database.lire_historique_pagine(recherche=search, operation=operation)
+                first = database.lire_historique_pagine(self.visitor_id, recherche=search, operation=operation)
                 self.assertEqual(first['total'], count)
                 ids = []
                 for page in range(1, first['pages'] + 1):
-                    result = database.lire_historique_pagine(page, recherche=search, operation=operation)
+                    result = database.lire_historique_pagine(self.visitor_id, page, recherche=search, operation=operation)
                     self.assertEqual(result['total'], count)
                     ids.extend(row['id'] for row in result['calculs'])
                 self.assertEqual(len(ids), count)
@@ -36,7 +36,7 @@ class HistoryFilterTests(unittest.TestCase):
         self.populate()
         for search in ('%', '_', "' OR 1=1 --", '<script>', 'not-a-number'):
             with self.subTest(search=search):
-                result = database.lire_historique_pagine(999, recherche=search)
+                result = database.lire_historique_pagine(self.visitor_id, 999, recherche=search)
                 self.assertEqual(result['total'], 0)
                 self.assertEqual(result['calculs'], [])
                 response = self.client.get('/historique', query_string={'recherche': search})
@@ -68,7 +68,7 @@ class HistoryFilterTests(unittest.TestCase):
 
     def test_delete_preserves_filter_and_clamps_page(self):
         self.populate()
-        row = database.lire_historique_pagine(2, operation='-')['calculs'][0]
+        row = database.lire_historique_pagine(self.visitor_id, 2, operation='-')['calculs'][0]
         self.client.get('/calcul')
         with self.client.session_transaction() as session:
             token = session['csrf_token']
@@ -78,12 +78,12 @@ class HistoryFilterTests(unittest.TestCase):
         self.assertEqual(params['operation'], ['-'])
         self.assertEqual(params['recherche'], ['123.5'])
         self.assertIn('Page 1 sur 1', self.client.get(response.headers['Location']).get_data(as_text=True))
-        self.assertEqual(database.lire_historique_pagine(operation='-')['total'], 20)
+        self.assertEqual(database.lire_historique_pagine(self.visitor_id, operation='-')['total'], 20)
 
     def test_filter_connection_is_closed(self):
         connection = database.obtenir_connexion()
         with patch.object(database, 'obtenir_connexion', return_value=connection):
-            database.lire_historique_pagine(recherche='1', operation='+')
+            database.lire_historique_pagine(self.visitor_id, recherche='1', operation='+')
         import sqlite3
         with self.assertRaises(sqlite3.ProgrammingError):
             connection.execute('SELECT 1')
