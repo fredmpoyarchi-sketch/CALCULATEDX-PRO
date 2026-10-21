@@ -1,0 +1,29 @@
+# MODELE Linux/systemd NON ACTIVE : adapter utilisateur, chemins et ressources.
+[Unit]
+Description=CALCULATEDX production WSGI
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=calculatedx
+Group=calculatedx
+WorkingDirectory=/REPLACE/application
+EnvironmentFile=/REPLACE/private/calculatedx.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/REPLACE/application/.venv/bin/python -B /REPLACE/application/production.py
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/REPLACE/persistent-data
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

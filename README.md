@@ -82,6 +82,11 @@ ainsi que l'intégration du site dans une iframe.
 
 ## API REST
 
+Pour le serveur WSGI, le stockage persistant, les limites anti-abus et la recette
+de production, consulter [le guide de déploiement](deploy/README.md).
+Les modèles d'infrastructure nécessitent un choix d'hébergement et ne sont pas
+des configurations déjà déployées.
+
 CALCULATEDX WEB expose une API permettant d'effectuer des calculs à partir de données JSON.
 
 ### Endpoint
