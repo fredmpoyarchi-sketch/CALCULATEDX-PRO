@@ -28,7 +28,7 @@ class HistoryDateTests(unittest.TestCase):
         with patch.object(calculator, 'obtenir_historique_pagine',
                           wraps=calculator.obtenir_historique_pagine) as read:
             response = self.client.get('/historique', query_string=dict(criteria, page='2'))
-            read.assert_called_once_with('2', '123.5', '+', '2026-10-19', '2026-10-21', 'ancien')
+            read.assert_called_once_with(self.visitor_id, '2', '123.5', '+', '2026-10-19', '2026-10-21', 'ancien')
         self.assertEqual(response.status_code, 200)
         html = response.get_data(as_text=True)
         form = html.split('class="history-filters">', 1)[1].split('</form>', 1)[0]
@@ -41,17 +41,17 @@ class HistoryDateTests(unittest.TestCase):
     def insert(self, dates, operation='+'):
         with database.obtenir_connexion() as connection:
             connection.executemany('''INSERT INTO calculs
-                (nombre1, operation, nombre2, resultat, date_creation)
-                VALUES (123.5, ?, 1, 124.5, ?)''', [(operation, value) for value in dates])
+                (nombre1, operation, nombre2, resultat, date_creation, visitor_id)
+                VALUES (123.5, ?, 1, 124.5, ?, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')''', [(operation, value) for value in dates])
 
     def test_inclusive_day_boundaries(self):
         self.insert(['2026-10-19 23:59:59', '2026-10-20 00:00:00',
                      '2026-10-20 23:59:59.999', '2026-10-21 00:00:00'])
-        result = database.lire_historique_pagine(date_debut='2026-10-20', date_fin='2026-10-20')
+        result = database.lire_historique_pagine(self.visitor_id, date_debut='2026-10-20', date_fin='2026-10-20')
         self.assertEqual(result['total'], 2)
         self.assertEqual([row['id'] for row in result['calculs']], [3, 2])
-        self.assertEqual(database.lire_historique_pagine(date_debut='2026-10-20')['total'], 3)
-        self.assertEqual(database.lire_historique_pagine(date_fin='2026-10-20')['total'], 3)
+        self.assertEqual(database.lire_historique_pagine(self.visitor_id, date_debut='2026-10-20')['total'], 3)
+        self.assertEqual(database.lire_historique_pagine(self.visitor_id, date_fin='2026-10-20')['total'], 3)
 
     def test_invalid_dates_order_and_injection(self):
         cases = [{'date_debut': value} for value in (
@@ -64,14 +64,14 @@ class HistoryDateTests(unittest.TestCase):
                 response = self.client.get('/historique', query_string=criteria)
                 self.assertEqual(response.status_code, 400)
                 self.assertNotIn('Traceback', response.get_data(as_text=True))
-        self.assertEqual(database.lire_historique_pagine()['total'], 0)
+        self.assertEqual(database.lire_historique_pagine(self.visitor_id)['total'], 0)
 
     def test_chronological_sort_and_ties(self):
         self.insert(['2026-10-21 12:00:00', '2026-10-19 12:00:00',
                      '2026-10-20 12:00:00', '2026-10-20 12:00:00'])
         for tri, expected in [('recent', [1, 4, 3, 2]), ('ancien', [2, 3, 4, 1])]:
             with self.subTest(tri=tri):
-                rows = database.lire_historique_pagine(tri=tri)['calculs']
+                rows = database.lire_historique_pagine(self.visitor_id, tri=tri)['calculs']
                 self.assertEqual([row['id'] for row in rows], expected)
 
     def test_combined_filters_pagination_and_form(self):
@@ -80,8 +80,8 @@ class HistoryDateTests(unittest.TestCase):
         self.insert(['2026-10-19 12:00:00'])
         criteria = dict(recherche='123.50', operation='+', date_debut='2026-10-20',
                         date_fin='2026-10-20', tri='ancien')
-        first = database.lire_historique_pagine(**criteria)
-        last = database.lire_historique_pagine(2, **criteria)
+        first = database.lire_historique_pagine(self.visitor_id, **criteria)
+        last = database.lire_historique_pagine(self.visitor_id, 2, **criteria)
         self.assertEqual(first['total'], 25)
         self.assertEqual(last['total'], 25)
         self.assertEqual(len(first['calculs']), 20)

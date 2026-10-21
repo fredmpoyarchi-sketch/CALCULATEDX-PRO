@@ -38,58 +38,58 @@ class NumericContractTests(NumericFixture, unittest.TestCase):
         ]
         for value, exact in cases:
             with self.subTest(value=value):
-                before = database.lire_historique()
+                before = database.lire_historique(self.visitor_id)
                 response = self.post_addition(value)
                 self.assertEqual(response.status_code, 200 if exact else 400)
                 if exact:
                     self.assertEqual(response.json['resultat'], value)
-                    self.assertEqual(database.lire_historique()[0]['resultat'], value)
+                    self.assertEqual(database.lire_historique(self.visitor_id)[0]['resultat'], value)
                 else:
                     self.assertIsInstance(response.json['erreur'], str)
-                    self.assertEqual(database.lire_historique(), before)
+                    self.assertEqual(database.lire_historique(self.visitor_id), before)
 
     def test_out_of_sqlite_integer_range_uses_real_or_rejects_loss(self):
         for value in (SQLITE_MIN - 1, SQLITE_MAX + 1, 10 ** 20, -(10 ** 20)):
             with self.subTest(value=value):
-                before = database.lire_historique()
+                before = database.lire_historique(self.visitor_id)
                 response = self.post_addition(value, propagate=True)
                 exact = float(value) == value
                 self.assertEqual(response.status_code, 200 if exact else 400)
                 if exact:
-                    self.assertEqual(database.lire_historique()[0]['resultat'], response.json['resultat'])
+                    self.assertEqual(database.lire_historique(self.visitor_id)[0]['resultat'], response.json['resultat'])
                 else:
-                    self.assertEqual(database.lire_historique(), before)
+                    self.assertEqual(database.lire_historique(self.visitor_id), before)
 
     def test_previous_result_overflow_and_operand_cancellation(self):
         for first, second in ((SQLITE_MAX, 1), (SQLITE_MIN, -1),
                               (SQLITE_MAX + 1, -(SQLITE_MAX + 1))):
             with self.subTest(first=first, second=second):
-                before = database.lire_historique()
+                before = database.lire_historique(self.visitor_id)
                 response = self.post_addition(first, second, propagate=True)
                 if first == SQLITE_MAX:
                     self.assertEqual(response.status_code, 400)
-                    self.assertEqual(database.lire_historique(), before)
+                    self.assertEqual(database.lire_historique(self.visitor_id), before)
                 else:
                     self.assertEqual(response.status_code, 200)
                     self.assertEqual(response.json['resultat'], float(first) + float(second))
-                    self.assertEqual(database.lire_historique()[0]['resultat'], response.json['resultat'])
+                    self.assertEqual(database.lire_historique(self.visitor_id)[0]['resultat'], response.json['resultat'])
 
     def test_previous_overflow_http_response_is_now_json_success(self):
         response = self.post_addition(10 ** 20)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.mimetype, 'application/json')
         self.assertEqual(response.json['resultat'], 10 ** 20)
-        self.assertEqual(database.lire_historique()[0]['resultat'], response.json['resultat'])
+        self.assertEqual(database.lire_historique(self.visitor_id)[0]['resultat'], response.json['resultat'])
 
     def test_wide_float_domain_and_rounded_fractions(self):
         for value in (1e308, -1e308, 5e-324, 0.1):
             with self.subTest(value=value):
                 response = self.post_addition(value)
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.json['resultat'], database.lire_historique()[0]['resultat'])
+                self.assertEqual(response.json['resultat'], database.lire_historique(self.visitor_id)[0]['resultat'])
         response = self.post_addition(0.1, 0.2)
         self.assertEqual(response.json['resultat'], 0.1 + 0.2)
-        self.assertEqual(database.lire_historique()[0]['resultat'], response.json['resultat'])
+        self.assertEqual(database.lire_historique(self.visitor_id)[0]['resultat'], response.json['resultat'])
 
     def test_html_integer_precision_and_large_floats(self):
         self.client.get('/calcul')
@@ -100,19 +100,19 @@ class NumericContractTests(NumericFixture, unittest.TestCase):
                               ('100000000000000000000', 200), ('1e308', 200),
                               ('nan', 400), ('inf', 400)]:
             with self.subTest(value=value):
-                before = database.lire_historique()
+                before = database.lire_historique(self.visitor_id)
                 response = self.client.post('/calcul', data=dict(
                     nombre1=value, nombre2='0', operation='addition', csrf_token=token))
                 self.assertEqual(response.status_code, status)
                 self.assertEqual(response.mimetype, 'text/html')
                 if status == 400:
-                    self.assertEqual(database.lire_historique(), before)
+                    self.assertEqual(database.lire_historique(self.visitor_id), before)
                     self.assertIn('Erreur de calcul', response.get_data(as_text=True))
                 else:
-                    self.assertEqual(database.lire_historique()[0]['resultat'], float(value))
+                    self.assertEqual(database.lire_historique(self.visitor_id)[0]['resultat'], float(value))
 
     def test_nonfinite_results_never_persist_in_either_interface(self):
-        before = database.lire_historique()
+        before = database.lire_historique(self.visitor_id)
         response = self.post_addition(1e308, 1e308)
         self.assertEqual(response.status_code, 400)
         self.assertNotIn('resultat', response.json)
@@ -122,19 +122,19 @@ class NumericContractTests(NumericFixture, unittest.TestCase):
         response = self.client.post('/calcul', data=dict(
             nombre1='1e308', nombre2='1e308', operation='addition', csrf_token=token))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(database.lire_historique(), before)
+        self.assertEqual(database.lire_historique(self.visitor_id), before)
 
 
 class NumericDesiredBehaviorTests(NumericFixture, unittest.TestCase):
     """Attentes : succès cohérent OU refus JSON 400, sans choisir la future plage."""
 
     def assert_consistent_success_or_rejection(self, first, second=0):
-        before = database.lire_historique()
+        before = database.lire_historique(self.visitor_id)
         response = self.post_addition(first, second)
         self.assertIn(response.status_code, (200, 400),
                       'Une entrée numérique doit réussir ou être refusée explicitement, sans HTTP 500.')
         self.assertEqual(response.mimetype, 'application/json')
-        after = database.lire_historique()
+        after = database.lire_historique(self.visitor_id)
         if response.status_code == 400:
             self.assertIsInstance(response.json.get('erreur'), str)
             self.assertNotIn('resultat', response.json)

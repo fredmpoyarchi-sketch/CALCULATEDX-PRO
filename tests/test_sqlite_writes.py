@@ -36,10 +36,11 @@ class SqliteWriteTests(unittest.TestCase):
                     connection = sqlite3.connect(path, factory=TrackingConnection)
                     self.connections.append(connection)
                     if not initialize:
-                        connection.execute('CREATE TABLE calculs (nombre1, operation, nombre2, resultat)')
+                        connection.execute('CREATE TABLE calculs (nombre1, operation, nombre2, resultat, visitor_id)')
                         connection.commit()
                     connection.fail = fail
-                    operation = database.initialiser_base if initialize else lambda: database.enregistrer_calcul(2, '+', 3, 5)
+                    operation = database.initialiser_base if initialize else lambda: database.enregistrer_calcul(
+                        2, '+', 3, 5, visitor_id=self.visitor_id)
                     with patch.object(database, 'obtenir_connexion', return_value=connection):
                         if fail:
                             with self.assertRaises(sqlite3.OperationalError):
@@ -72,7 +73,7 @@ class SqliteWriteTests(unittest.TestCase):
                 self.assertTrue(any(record.exc_info for record in logs.records))
                 if route.startswith('/api'):
                     self.assertIsInstance(response.json['erreur'], str)
-                self.assertEqual(database.lire_historique(), [])
+                self.assertEqual(database.lire_historique(self.visitor_id), [])
 
 
 if __name__ == '__main__':
