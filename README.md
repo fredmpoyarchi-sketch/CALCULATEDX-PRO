@@ -65,6 +65,21 @@ L'application est ensuite accessible dans le navigateur à l'adresse :
 
 `http://127.0.0.1:5000`
 
+## Sécurité Flask
+
+Les cookies de session exigent HTTPS (`Secure`, `HttpOnly`, `SameSite=Lax`).
+Le navigateur doit accéder à l'application en HTTPS pour conserver son historique
+et son jeton CSRF. Le lancement HTTP décrit plus haut reste un serveur de
+développement et ne constitue pas une configuration de production. HSTS n'est
+pas activé tant que la topologie HTTPS n'a pas été validée.
+
+`DEBUG` et `TESTING` sont désactivés par défaut. Les tests activent explicitement
+`app.config["TESTING"] = True` dans leur configuration isolée, sans désactiver
+le CSRF ou les en-têtes de sécurité. Les corps de requête sont limités à 16 Kio ;
+un dépassement renvoie HTTP 413 (JSON pour `/api/`) avant toute écriture SQLite.
+La CSP autorise uniquement les ressources locales et interdit les scripts inline
+ainsi que l'intégration du site dans une iframe.
+
 ## API REST
 
 CALCULATEDX WEB expose une API permettant d'effectuer des calculs à partir de données JSON.
