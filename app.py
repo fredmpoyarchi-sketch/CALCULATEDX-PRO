@@ -94,16 +94,23 @@ def calcul():
 
             if operation == "addition":
                 resultat = calculatrice.additionner(
-                nombre1, nombre2, obtenir_visitor_id())
+                    nombre1, nombre2, obtenir_visitor_id()
+                )
 
             elif operation == "soustraction":
-                resultat = calculatrice.soustraire(nombre1, nombre2, obtenir_visitor_id())
+                resultat = calculatrice.soustraire(
+                    nombre1, nombre2, obtenir_visitor_id()
+                )
 
             elif operation == "multiplication":
-                resultat = calculatrice.multiplier(nombre1, nombre2, obtenir_visitor_id())
+                resultat = calculatrice.multiplier(
+                    nombre1, nombre2, obtenir_visitor_id()
+                )
 
             elif operation == "division":
-                resultat = calculatrice.diviser(nombre1, nombre2, obtenir_visitor_id())
+                resultat = calculatrice.diviser(
+                    nombre1, nombre2, obtenir_visitor_id()
+                )
 
             else:
                 raise ValueError("Opération non valide. Choisissez une opération proposée.")
@@ -215,16 +222,23 @@ def api_calculer():
     try:
         if operation == "addition":
             resultat = calculatrice.additionner(
-                nombre1, nombre2, obtenir_visitor_id())
+                nombre1, nombre2, obtenir_visitor_id()
+            )
 
         elif operation == "soustraction":
-            resultat = calculatrice.soustraire(nombre1, nombre2, obtenir_visitor_id())
+            resultat = calculatrice.soustraire(
+                nombre1, nombre2, obtenir_visitor_id()
+            )
 
         elif operation == "multiplication":
-            resultat = calculatrice.multiplier(nombre1, nombre2, obtenir_visitor_id())
+            resultat = calculatrice.multiplier(
+                nombre1, nombre2, obtenir_visitor_id()
+            )
 
         elif operation == "division":
-            resultat = calculatrice.diviser(nombre1, nombre2, obtenir_visitor_id())
+            resultat = calculatrice.diviser(
+                nombre1, nombre2, obtenir_visitor_id()
+            )
     except ValueError as e:
         return jsonify({
             "erreur": str(e)
