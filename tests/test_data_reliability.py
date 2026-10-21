@@ -71,6 +71,7 @@ class DataReliabilityTests(unittest.TestCase):
         restored = self.root / 'restored.sqlite3'
         data_admin.restore(snapshot, self.manifest(snapshot), restored)
         self.assertEqual(self.rows(restored), self.rows(snapshot))
+        self.assertEqual(restored.read_bytes(), snapshot.read_bytes())
         self.assertEqual(data_admin.verify(restored, self.manifest(restored))['rows'], 3)
         self.assertEqual(self.source.read_bytes(), before)
         with patch.object(database, 'DB_PATH', restored):
@@ -190,6 +191,24 @@ class DataReliabilityTests(unittest.TestCase):
             data_admin.restore(snapshot, self.manifest(snapshot), target)
         self.assertFalse(target.exists())
 
+    def test_snapshot_changed_after_verification_is_not_published(self):
+        snapshot = self.snapshot()
+        target = self.root / 'changed-restore.sqlite3'
+        original_build = data_admin._build
+
+        def change_then_build(*args, **kwargs):
+            with closing(sqlite3.connect(snapshot)) as connection, connection:
+                connection.execute("UPDATE calculs SET visitor_id = 'unexpected-owner'")
+            return original_build(*args, **kwargs)
+
+        with patch.object(data_admin, '_build', side_effect=change_then_build):
+            with self.assertRaises(ValueError):
+                data_admin.restore(snapshot, self.manifest(snapshot), target)
+        self.assertFalse(target.exists())
+        self.assertFalse(self.manifest(target).exists())
+        self.assertEqual(len(self.rows(self.source)), 3)
+        self.assertEqual(list(self.root.glob('.calculatedx-*')), [])
+
     def test_manifest_counts_and_corrupt_source_are_rejected(self):
         snapshot = self.snapshot()
         manifest = self.manifest(snapshot)
@@ -261,7 +280,7 @@ with patch.object(database, 'appliquer_schema', side_effect=AssertionError('No s
     assert len(database.lire_historique('a' * 64)) == 1
 print('ok')
 '''
-        environment = dict(os.environ, CALCULATEDX_SECRET_KEY='recovery-test-key',
+        environment = dict(os.environ, CALCULATEDX_SECRET_KEY='recovery-test-key-for-isolated-tests',
                            CALCULATEDX_DB_PATH=str(restored), CALCULATEDX_HOSTNAMES='calculator.test')
         result = subprocess.run([sys.executable, '-B', '-c', script], cwd=Path(database.__file__).parent,
                                 env=environment, capture_output=True, text=True, timeout=20)

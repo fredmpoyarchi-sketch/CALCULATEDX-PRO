@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import sqlite3
 import stat
+import shutil
 import tempfile
 import time
 
@@ -88,7 +89,7 @@ def verify(snapshot, manifest):
     return actual
 
 
-def _build(destination, *, source=None, migrate=False, timeout=30):
+def _build(destination, *, source=None, migrate=False, timeout=30, expected=None):
     destination = private_path(destination, existing=False)
     manifest = private_path(str(destination) + ".manifest.json", existing=False)
     if source is not None:
@@ -100,8 +101,15 @@ def _build(destination, *, source=None, migrate=False, timeout=30):
         staged = Path(temporary) / "snapshot.sqlite3"
         fd = os.open(staged, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         os.close(fd)
+        if expected is not None:
+            # Restaurer les octets vérifiés, sans normalisation de l'en-tête SQLite.
+            # Une modification de la source entre verify et la copie doit échouer.
+            with source.open("rb") as origin, staged.open("wb") as target:
+                shutil.copyfileobj(origin, target, length=1024 * 1024)
+            if sha256(staged) != expected["sha256"] or staged.stat().st_size != expected["bytes"]:
+                raise ValueError("Snapshot modifié pendant la restauration.")
         with closing(sqlite3.connect(staged.as_uri() + "?mode=rw", uri=True)) as target:
-            if source is not None:
+            if source is not None and expected is None:
                 deadline = time.monotonic() + timeout
                 def progress(status, remaining, total):
                     if time.monotonic() >= deadline:
@@ -117,6 +125,8 @@ def _build(destination, *, source=None, migrate=False, timeout=30):
         if migrate:
             validate_database(staged)
         metadata = describe(staged)
+        if expected is not None and metadata != expected:
+            raise ValueError("La restauration ne correspond pas au snapshot vérifié.")
         metadata["created_utc"] = datetime.now(timezone.utc).isoformat()
         staged_manifest = Path(temporary) / "manifest.json"
         fd = os.open(staged_manifest, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -155,7 +165,7 @@ def restore(snapshot, manifest, destination):
     if metadata["schema_version"] != database.SCHEMA_VERSION:
         raise ValueError("Préparer une copie migrée du snapshot avant restauration.")
     validate_database(private_path(snapshot))
-    return _build(destination, source=snapshot)
+    return _build(destination, source=snapshot, expected=metadata)
 
 
 def main(argv=None):

@@ -43,7 +43,7 @@ cette restriction. Ne pas exposer le répertoire du dépôt comme racine web.
 
 | Variable | Contrat |
 | --- | --- |
-| `CALCULATEDX_SECRET_KEY` | Secret aléatoire persistant, obligatoire. Injecté hors dépôt par le gestionnaire de secrets/service. Identique après redémarrage. |
+| `CALCULATEDX_SECRET_KEY` | Secret aléatoire persistant, obligatoire (minimum 32 caractères contrôlé). Générer 32 octets aléatoires, par exemple avec `secrets.token_hex(32)` ; la longueur seule ne garantit pas l'entropie. Injecté hors dépôt par le gestionnaire de secrets/service. Identique après redémarrage. |
 | `CALCULATEDX_DB_PATH` | Chemin absolu d'un fichier SQLite existant et déjà préparé, hors dépôt, sur stockage persistant local. |
 | `CALCULATEDX_HOSTNAMES` | Noms DNS exacts séparés par virgules, sans schéma, port ni joker. Host non autorisé : HTTP 400. |
 | `CALCULATEDX_PORT` | Port loopback, 8080 par défaut, entier de 1 à 65535. Adapter le frontal si différent. |

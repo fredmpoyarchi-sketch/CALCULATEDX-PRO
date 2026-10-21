@@ -84,7 +84,7 @@ La configuration est chargée depuis
 
 | Variable | Valeur à provisionner |
 | --- | --- |
-| `CALCULATEDX_SECRET_KEY` | Clé aléatoire créée une seule fois, stable aux reloads. |
+| `CALCULATEDX_SECRET_KEY` | Clé aléatoire créée une seule fois, stable aux reloads ; minimum 32 caractères contrôlé au démarrage. Générer 32 octets aléatoires comme ci-dessous : la longueur seule ne prouve pas l'entropie. |
 | `CALCULATEDX_DB_PATH` | Chemin absolu de la base privée existante. |
 | `CALCULATEDX_HOSTNAMES` | Domaine exact affiché dans Web, par exemple `YOUR_USERNAME.pythonanywhere.com` ou sa variante EU. |
 

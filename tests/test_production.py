@@ -25,7 +25,7 @@ class ProductionTests(unittest.TestCase):
         with patch.object(database, 'DB_PATH', self.path):
             database.initialiser_base()
             database.enregistrer_calcul(2, '+', 3, 5, 'owner')
-        self.environment = dict(CALCULATEDX_SECRET_KEY='test-only-production-secret',
+        self.environment = dict(CALCULATEDX_SECRET_KEY='test-only-production-secret-for-isolated-tests',
                                 CALCULATEDX_DB_PATH=str(self.path),
                                 CALCULATEDX_HOSTNAMES='calculator.test')
 
@@ -44,6 +44,16 @@ class ProductionTests(unittest.TestCase):
         self.assertIsNone(options.trusted_proxy)
         self.assertTrue(options.clear_untrusted_proxy_headers)
         self.assertFalse(options.expose_tracebacks)
+
+    def test_short_session_keys_are_rejected_before_database_access(self):
+        for secret in ('x', 'short-test-secret', 'a' * 31):
+            with self.subTest(length=len(secret)), patch.dict(
+                    os.environ, dict(self.environment, CALCULATEDX_SECRET_KEY=secret), clear=True):
+                with patch.object(production.sqlite3, 'connect') as connect:
+                    with self.assertRaises(ValueError) as error:
+                        production.Settings.from_environment()
+                    self.assertNotIn(secret, str(error.exception))
+                    connect.assert_not_called()
 
     def test_invalid_environment_fails_without_creating_database(self):
         missing = self.path.parent / 'missing.db'

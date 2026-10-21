@@ -24,7 +24,7 @@ class PythonAnywhereTests(unittest.TestCase):
         with patch.object(database, 'DB_PATH', self.path):
             database.initialiser_base()
             database.enregistrer_calcul(2, '+', 3, 5, 'other-owner')
-        self.values = dict(CALCULATEDX_SECRET_KEY='test-only-persistent-secret',
+        self.values = dict(CALCULATEDX_SECRET_KEY='test-only-persistent-secret-for-isolated-tests',
                            CALCULATEDX_DB_PATH=str(self.path),
                            CALCULATEDX_HOSTNAMES='testuser.pythonanywhere.com')
         self.write_config(self.values)
@@ -128,7 +128,7 @@ with patch('pathlib.Path.home', return_value=home), \\
     client2 = Client(application2, Response)
     client2.set_cookie('session', cookie.value, domain='testuser.pythonanywhere.com')
     assert client2.get('/api/v1/statistiques', base_url='https://testuser.pythonanywhere.com').json['total'] == 1
-    assert application2.application.config['SECRET_KEY'] == 'test-only-persistent-secret'
+    assert application2.application.config['SECRET_KEY'] == 'test-only-persistent-secret-for-isolated-tests'
     print(json.dumps({'status': 'ok'}))
 '''
         result = subprocess.run([sys.executable, '-B', '-c', script, str(root), str(self.home)],

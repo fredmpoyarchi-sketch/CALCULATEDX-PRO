@@ -22,6 +22,8 @@ class Settings:
     def from_environment(cls):
         if not os.environ.get("CALCULATEDX_SECRET_KEY", "").strip():
             raise ValueError("CALCULATEDX_SECRET_KEY est obligatoire.")
+        if len(os.environ["CALCULATEDX_SECRET_KEY"].strip()) < 32:
+            raise ValueError("Clé de session trop courte (minimum 32 caractères).")
         raw_path = os.environ.get("CALCULATEDX_DB_PATH", "")
         path = Path(raw_path)
         if not raw_path or not path.is_absolute() or not path.is_file():

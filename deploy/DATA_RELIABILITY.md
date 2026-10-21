@@ -134,6 +134,12 @@ schéma. La restauration crée un nouveau fichier et manifeste ; elle ne remplac
 jamais la base active. Une archive ancienne peut être vérifiée, mais nécessite
 `prepare --source ...` vers une copie migrée avant activation si sa version est 0.
 
+La restauration copie les octets du snapshot vers un temporaire privé, puis
+compare son empreinte, sa taille et ses métadonnées à celles vérifiées avant
+publication. Une modification de l'archive entre vérification et copie est
+refusée. Ce chemin concerne une archive figée ; la sauvegarde d'une base active
+continue d'utiliser l'API SQLite, jamais une copie brute.
+
 Recette privée obligatoire avant bascule :
 
 1. Vérifier la paire, restaurer à un chemin neuf et contrôler lignes, NULL, dates,
