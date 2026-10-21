@@ -6,6 +6,9 @@ from datetime import date
 
 # Emplacement de la base de données
 DB_PATH = Path(__file__).resolve().parent / "calculatedx.db"
+SCHEMA_VERSION = 1
+# Le profil de production valide le schéma puis désactive l'initialisation WSGI.
+INITIALISER_AU_DEMARRAGE = True
 
 
 def obtenir_connexion():
@@ -22,32 +25,37 @@ def initialiser_base():
     with closing(obtenir_connexion()) as connexion:
         with connexion:
             connexion.execute("BEGIN")
-            connexion.execute("""
-                CREATE TABLE IF NOT EXISTS calculs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nombre1 REAL NOT NULL,
-                    operation TEXT NOT NULL,
-                    nombre2 REAL NOT NULL,
-                    resultat REAL NOT NULL,
-                    date_creation TEXT DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
+            appliquer_schema(connexion)
 
-            # Migration non destructive des anciennes bases SQLite.
-            colonnes = {
-                ligne[1]
-                for ligne in connexion.execute("PRAGMA table_info(calculs)")
-            }
 
-            if "visitor_id" not in colonnes:
-                connexion.execute(
-                    "ALTER TABLE calculs ADD COLUMN visitor_id TEXT"
-                )
+def appliquer_schema(connexion):
+    """Migration additive v1 ; l'appelant doit ouvrir une transaction d'écriture."""
+    version = connexion.execute("PRAGMA user_version").fetchone()[0]
+    if version not in (0, SCHEMA_VERSION):
+        raise ValueError("Version de schéma non prise en charge.")
+    connexion.execute("""
+        CREATE TABLE IF NOT EXISTS calculs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre1 REAL NOT NULL,
+            operation TEXT NOT NULL,
+            nombre2 REAL NOT NULL,
+            resultat REAL NOT NULL,
+            date_creation TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
 
-            connexion.execute("""
-                CREATE INDEX IF NOT EXISTS idx_calculs_visitor_id
-                ON calculs (visitor_id)
-            """)
+    # Migration non destructive des anciennes bases SQLite.
+    colonnes = {
+        ligne[1] for ligne in connexion.execute("PRAGMA table_info(calculs)")
+    }
+
+    if "visitor_id" not in colonnes:
+        connexion.execute("ALTER TABLE calculs ADD COLUMN visitor_id TEXT")
+
+    connexion.execute("""
+        CREATE INDEX IF NOT EXISTS idx_calculs_visitor_id ON calculs (visitor_id)
+    """)
+    connexion.execute("PRAGMA user_version = 1")
 
 def enregistrer_calcul(nombre1, operation, nombre2, resultat, visitor_id):
     """Enregistre un calcul pour un visiteur anonyme."""

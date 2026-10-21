@@ -4,6 +4,10 @@
 Historique - CALCULATEDX PRO
 {% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/historique.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
 
 <section class="history-page">
@@ -118,7 +122,7 @@ Historique - CALCULATEDX PRO
             <form
                 action="{{ url_for('supprimer_operation', calcul_id=calcul.id) }}"
                 method="POST"
-                onsubmit="return confirm('Voulez-vous vraiment supprimer ce calcul ?');"
+                class="history-delete-form"
             >
                 <input type="hidden" name="page" value="{{ pagination.page }}">
                 <input type="hidden" name="date_debut" value="{{ pagination.date_debut }}">

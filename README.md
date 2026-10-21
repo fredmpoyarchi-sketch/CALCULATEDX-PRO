@@ -65,7 +65,31 @@ L'application est ensuite accessible dans le navigateur à l'adresse :
 
 `http://127.0.0.1:5000`
 
+## Sécurité Flask
+
+Les cookies de session exigent HTTPS (`Secure`, `HttpOnly`, `SameSite=Lax`).
+Le navigateur doit accéder à l'application en HTTPS pour conserver son historique
+et son jeton CSRF. Le lancement HTTP décrit plus haut reste un serveur de
+développement et ne constitue pas une configuration de production. HSTS n'est
+pas activé tant que la topologie HTTPS n'a pas été validée.
+
+`DEBUG` et `TESTING` sont désactivés par défaut. Les tests activent explicitement
+`app.config["TESTING"] = True` dans leur configuration isolée, sans désactiver
+le CSRF ou les en-têtes de sécurité. Les corps de requête sont limités à 16 Kio ;
+un dépassement renvoie HTTP 413 (JSON pour `/api/`) avant toute écriture SQLite.
+La CSP autorise uniquement les ressources locales et interdit les scripts inline
+ainsi que l'intégration du site dans une iframe.
+
 ## API REST
+
+Pour le serveur WSGI, le stockage persistant, les limites anti-abus et la recette
+de production sur la cible retenue **PythonAnywhere Free**, consulter
+[le guide PythonAnywhere](deploy/PYTHONANYWHERE.md).
+Le [profil WSGI autonome](deploy/README.md) reste une alternative ; ses modèles
+Nginx/systemd et son lancement Waitress ne s'appliquent pas à PythonAnywhere.
+La [stratégie de fiabilité des données](deploy/DATA_RELIABILITY.md) compare les
+stockages et décrit préparation, sauvegardes, restauration et limites des
+historiques anonymes. Le choix d'un stockage fiable reste préalable à la publication.
 
 CALCULATEDX WEB expose une API permettant d'effectuer des calculs à partir de données JSON.
 

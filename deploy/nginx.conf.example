@@ -1,0 +1,92 @@
+# MODELE NON ACTIVE. Hypothèse exclusive : Linux, Nginx public directement
+# connecté aux clients, sans CDN/LB, Waitress sur le même hôte 127.0.0.1:8080.
+# Inclure dans le contexte http {} après adaptation et nginx -t.
+# Remplacer domaine, certificats et chemins ; ne jamais publier example.invalid.
+limit_req_zone $binary_remote_addr zone=calculatedx_origin:10m rate=5r/s;
+limit_req_zone $server_name zone=calculatedx_global:1m rate=50r/s;
+log_format calculatedx_safe 'status=$status duration=$request_time upstream=$upstream_status';
+
+server {
+    listen 80 default_server;
+    server_name _;
+    access_log off;
+    return 444;
+}
+
+server {
+    listen 80;
+    server_name calculator.example.invalid;
+    access_log off;
+    return 308 https://calculator.example.invalid$request_uri;
+}
+
+server {
+    listen 443 ssl default_server;
+    ssl_reject_handshake on;
+}
+
+server {
+    listen 443 ssl;
+    server_name calculator.example.invalid;
+    ssl_certificate /REPLACE/certificate-fullchain.pem;
+    ssl_certificate_key /REPLACE/certificate-private-key.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    server_tokens off;
+    # Pas de HSTS avant validation HTTPS et décision explicite.
+    access_log /REPLACE/logs/calculatedx-access.log calculatedx_safe;
+    # Les journaux d'erreur natifs Nginx peuvent inclure URI/en-têtes : désactivés.
+    # Superviser les statuts 5xx via l'access log et le processus séparément.
+    error_log /dev/null;
+    client_max_body_size 16k;
+    client_header_timeout 10s;
+    client_body_timeout 10s;
+    send_timeout 15s;
+    keepalive_timeout 15s;
+    limit_req zone=calculatedx_origin burst=10 nodelay;
+    limit_req zone=calculatedx_global burst=50 nodelay;
+    limit_req_status 429;
+    error_page 429 = @too_many_requests;
+
+    # En-têtes également sur les erreurs générées par le frontal.
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy no-referrer always;
+    add_header X-Frame-Options DENY always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'" always;
+
+    location @too_many_requests {
+        default_type application/json;
+        # add_header local remplace l'héritage : répéter les protections.
+        add_header Retry-After 1 always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header Referrer-Policy no-referrer always;
+        add_header X-Frame-Options DENY always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'" always;
+        return 429 '{"erreur":"Trop de requetes. Reessayez plus tard."}';
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host calculator.example.invalid;
+        # L'IP est exploitée au frontal, jamais déduite d'un cookie ou d'un XFF client.
+        # Pas de ProxyFix et aucun en-tête transféré utilisé par l'application.
+        proxy_set_header Forwarded "";
+        proxy_set_header X-Forwarded-For "";
+        proxy_set_header X-Forwarded-Proto "";
+        proxy_set_header X-Forwarded-Host "";
+        proxy_set_header X-Forwarded-Port "";
+        proxy_set_header X-Forwarded-Prefix "";
+        proxy_set_header X-Real-IP "";
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 15s;
+        proxy_send_timeout 15s;
+        proxy_request_buffering on;
+        proxy_cache off;
+        proxy_hide_header X-Content-Type-Options;
+        proxy_hide_header Referrer-Policy;
+        proxy_hide_header X-Frame-Options;
+        proxy_hide_header Content-Security-Policy;
+        proxy_hide_header Strict-Transport-Security;
+    }
+}

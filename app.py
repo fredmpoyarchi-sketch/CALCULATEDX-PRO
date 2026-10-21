@@ -2,18 +2,80 @@ import os
 import secrets
 import sqlite3
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, abort
 from models import Calculatrice, normaliser_nombre
-from database import obtenir_statistiques, supprimer_calcul
+from database import obtenir_statistiques, supprimer_calcul, INITIALISER_AU_DEMARRAGE
 
 app = Flask(__name__)
+app.config.update(
+    DEBUG=False,
+    TESTING=False,
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    MAX_CONTENT_LENGTH=16 * 1024,
+)
 app.secret_key = os.environ.get("CALCULATEDX_SECRET_KEY")
 if not app.secret_key or not app.secret_key.strip():
     raise RuntimeError(
         "Démarrage impossible : définissez CALCULATEDX_SECRET_KEY avec une clé "
         "secrète aléatoire persistante dans l'environnement."
     )
-calculatrice = Calculatrice()
+calculatrice = Calculatrice(initialiser=INITIALISER_AU_DEMARRAGE)
+
+@app.before_request
+def limiter_corps_requete():
+    # Lecture bornée et mise en cache avant le CSRF et toute écriture SQLite.
+    limite = app.config["MAX_CONTENT_LENGTH"]
+    if request.content_length is not None and request.content_length > limite:
+        abort(413)
+    # Un flux WSGI terminé peut être tronqué silencieusement à la limite.
+    # Lire au plus un octet supplémentaire permet de détecter le dépassement.
+    if "wsgi.input_terminated" in request.environ:
+        request.max_content_length = limite + 1
+    try:
+        corps = request.get_data(cache=True)
+    finally:
+        request.max_content_length = limite
+    if len(corps) > limite:
+        abort(413)
+
+
+@app.errorhandler(413)
+def corps_requete_excessif(erreur):
+    message = "Corps de requête trop volumineux (maximum 16 Kio)."
+    if request.path.startswith("/api/"):
+        return jsonify({"erreur": message}), 413
+    return message, 413
+
+
+@app.before_request
+def limiter_frequence_requetes():
+    # Activé uniquement par un profil de déploiement qui connaît son frontal.
+    limiteur = app.extensions.get("request_rate_limiter")
+    if limiteur is not None:
+        attente = limiteur.retry_after(request.environ)
+        if attente:
+            reponse = jsonify({"erreur": "Trop de requêtes. Réessayez plus tard."})
+            reponse.status_code = 429
+            reponse.headers["Retry-After"] = str(attente)
+            reponse.headers["Cache-Control"] = "no-store"
+            return reponse
+    return None
+
+
+@app.after_request
+def ajouter_entetes_securite(reponse):
+    reponse.headers["X-Content-Type-Options"] = "nosniff"
+    reponse.headers["Referrer-Policy"] = "no-referrer"
+    reponse.headers["X-Frame-Options"] = "DENY"
+    reponse.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self'; style-src 'self'; "
+        "object-src 'none'; base-uri 'none'; frame-ancestors 'none'; "
+        "form-action 'self'"
+    )
+    return reponse
+
 
 def obtenir_visitor_id():
     """Retourne un identifiant anonyme propre à la session."""
