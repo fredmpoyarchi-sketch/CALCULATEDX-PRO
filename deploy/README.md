@@ -1,5 +1,9 @@
 # Production — lot 2
 
+**Cible désormais retenue : PythonAnywhere Free.** Suivre
+[le guide dédié](PYTHONANYWHERE.md). Ce document conserve le profil autonome
+alternatif : ne pas lancer Waitress, Nginx ou systemd sur PythonAnywhere Free.
+
 ## Statut et décisions bloquantes
 
 Aucun hébergement, OS serveur, domaine ni fournisseur TLS n'est confirmé. Aucun

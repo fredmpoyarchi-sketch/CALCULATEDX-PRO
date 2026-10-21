@@ -49,6 +49,21 @@ def corps_requete_excessif(erreur):
     return message, 413
 
 
+@app.before_request
+def limiter_frequence_requetes():
+    # Activé uniquement par un profil de déploiement qui connaît son frontal.
+    limiteur = app.extensions.get("request_rate_limiter")
+    if limiteur is not None:
+        attente = limiteur.retry_after(request.environ)
+        if attente:
+            reponse = jsonify({"erreur": "Trop de requêtes. Réessayez plus tard."})
+            reponse.status_code = 429
+            reponse.headers["Retry-After"] = str(attente)
+            reponse.headers["Cache-Control"] = "no-store"
+            return reponse
+    return None
+
+
 @app.after_request
 def ajouter_entetes_securite(reponse):
     reponse.headers["X-Content-Type-Options"] = "nosniff"

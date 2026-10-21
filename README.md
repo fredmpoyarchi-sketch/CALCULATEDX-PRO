@@ -83,9 +83,10 @@ ainsi que l'intégration du site dans une iframe.
 ## API REST
 
 Pour le serveur WSGI, le stockage persistant, les limites anti-abus et la recette
-de production, consulter [le guide de déploiement](deploy/README.md).
-Les modèles d'infrastructure nécessitent un choix d'hébergement et ne sont pas
-des configurations déjà déployées.
+de production sur la cible retenue **PythonAnywhere Free**, consulter
+[le guide PythonAnywhere](deploy/PYTHONANYWHERE.md).
+Le [profil WSGI autonome](deploy/README.md) reste une alternative ; ses modèles
+Nginx/systemd et son lancement Waitress ne s'appliquent pas à PythonAnywhere.
 
 CALCULATEDX WEB expose une API permettant d'effectuer des calculs à partir de données JSON.
 
