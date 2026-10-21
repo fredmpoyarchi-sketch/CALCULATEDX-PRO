@@ -15,21 +15,38 @@ def obtenir_connexion():
     return connexion
 
 
+
 def initialiser_base():
-    """Crée la table des calculs si elle n'existe pas."""
+    """Crée la table et ajoute la colonne visitor_id si nécessaire."""
 
     with closing(obtenir_connexion()) as connexion:
         with connexion:
             connexion.execute("BEGIN")
             connexion.execute("""
-            CREATE TABLE IF NOT EXISTS calculs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                nombre1 REAL NOT NULL,
-                operation TEXT NOT NULL,
-                nombre2 REAL NOT NULL,
-                resultat REAL NOT NULL,
-                date_creation TEXT DEFAULT CURRENT_TIMESTAMP
-            )
+                CREATE TABLE IF NOT EXISTS calculs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nombre1 REAL NOT NULL,
+                    operation TEXT NOT NULL,
+                    nombre2 REAL NOT NULL,
+                    resultat REAL NOT NULL,
+                    date_creation TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Migration non destructive des anciennes bases SQLite.
+            colonnes = {
+                ligne[1]
+                for ligne in connexion.execute("PRAGMA table_info(calculs)")
+            }
+
+            if "visitor_id" not in colonnes:
+                connexion.execute(
+                    "ALTER TABLE calculs ADD COLUMN visitor_id TEXT"
+                )
+
+            connexion.execute("""
+                CREATE INDEX IF NOT EXISTS idx_calculs_visitor_id
+                ON calculs (visitor_id)
             """)
 
 
